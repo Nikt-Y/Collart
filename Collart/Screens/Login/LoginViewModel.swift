@@ -32,9 +32,14 @@ class LoginViewModel: ObservableObject {
     
     private func startFakeNetworkCall() {
         isLoading = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            self.isLoading = false
-            AuthenticationManager.shared.login()
+        print(password)
+        NetworkService.loginUser(email: login, password: password) { success, error in
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
+            if (error != nil) {
+                print(error?.localizedDescription)
+            }
         }
     }
 }

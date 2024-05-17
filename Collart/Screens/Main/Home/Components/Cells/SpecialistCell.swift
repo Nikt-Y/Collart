@@ -6,71 +6,109 @@
 //
 
 import SwiftUI
+import CachedAsyncImage
 
 // TODO: Может стоит добавить описание к специалисту?
 struct SpecialistCell: View {
     @EnvironmentObject var settingsManager: SettingsManager
-    
+    @State var isNotSelected: Bool = true
     var specialist: Specialist
-    
-    let backgroundImage = Image(systemName: "photo.artframe")
-    let specImage = Image(systemName: "photo.artframe")
-    let name = "Luis Moreno"
-    let profession = "Цифровой художник"
-    let experience = "2 года"
-    let tools = "Adobe Illustrator, Adobe Photoshop, Corel Painter, Procreate"
+    var onRespond: () -> Void = {}
     
     var body: some View {
         VStack {
-            backgroundImage
-                .resizable()
-                .scaledToFill()
-                .frame(height: 90)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .foregroundColor(.black)
-                .padding()
-                .overlay(alignment: .bottom) {
-                    specImage
+            CachedAsyncImage(url: URL(string: !specialist.backgroundImage.isEmpty ? specialist.backgroundImage : "no url"), urlCache: .imageCache) { phase in
+                switch phase {
+                case .success(let image):
+                    image
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 80, height: 80)
-                        .clipShape(Circle())
-                        .foregroundColor(.black)
-                        .padding(5)
-                        .background(settingsManager.currentTheme.backgroundColor)
-                        .clipShape(Circle())
-                        .offset(y: 10)
+                case .empty:
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: settingsManager.currentTheme.primaryColor))
+                        .scaledToFill()
+                case .failure(_):
+                    Image(systemName: "photo.artframe")
+                        .resizable()
+                        .scaledToFill()
+                        .foregroundColor(settingsManager.currentTheme.textColorPrimary)
+                @unknown default:
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: settingsManager.currentTheme.primaryColor))
+                        .scaledToFill()
+                }
+            }
+                .frame(height: 90)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .contentShape(RoundedRectangle(cornerRadius: 10))
+                .padding()
+                .overlay(alignment: .bottom) {
+                    CachedAsyncImage(url: URL(string: !specialist.specImage.isEmpty ? specialist.specImage : "no url"), urlCache: .imageCache) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        case .empty:
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: settingsManager.currentTheme.primaryColor))
+                        case .failure(_):
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .scaledToFill()
+                                .foregroundColor(settingsManager.currentTheme.textColorPrimary)
+                        @unknown default:
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: settingsManager.currentTheme.primaryColor))
+                        }
+                    }
+                    .frame(width: 80, height: 80)
+                    .clipShape(Circle())
+                    .contentShape(Circle())
+                    .padding(5)
+                    .background(settingsManager.currentTheme.backgroundColor)
+                    .clipShape(Circle())
+                    .offset(y: 10)
                 }
             
             VStack(spacing: 5) {
-                Text(name)
+                Text(specialist.name)
                     .font(.system(size: settingsManager.textSizeSettings.pageName))
                     .foregroundColor(settingsManager.currentTheme.textColorPrimary)
                     .bold()
                     .padding(.bottom, 1)
                 
-                Text(profession)
+                Text(specialist.profession)
                     .font(.system(size: settingsManager.textSizeSettings.title))
                     .foregroundColor(settingsManager.currentTheme.textDescriptionColor)
                     .padding(.bottom, 11)
                 
-                VStack(alignment: .leading) {
-                    Group {
-                        Text("Опыт работы: \(experience)")
-                            .font(.system(size: settingsManager.textSizeSettings.body))
-                            .foregroundColor(settingsManager.currentTheme.textDescriptionColor)
-                        
-                        Text("Программы: \(tools)")
-                            .font(.system(size: settingsManager.textSizeSettings.body))
-                            .foregroundColor(settingsManager.currentTheme.textDescriptionColor)
+                HStack {
+                    VStack(alignment: .leading) {
+                        Group {
+                            Text("Опыт работы: \(specialist.experience)")
+                                .font(.system(size: settingsManager.textSizeSettings.body))
+                                .foregroundColor(settingsManager.currentTheme.textDescriptionColor)
+                            
+                            Text("Программы: \(specialist.tools)")
+                                .font(.system(size: settingsManager.textSizeSettings.body))
+                                .foregroundColor(settingsManager.currentTheme.textDescriptionColor)
+                        }
+                        .lineLimit(2)
                     }
-                    .lineLimit(2)
+                    
+                    Spacer()
                 }
+                .padding(.horizontal)
+
                 
-                Button("Пригласить") {
-                    // action
+                Button(isNotSelected ? "Пригласить" : "Приглашение отправлено") {
+                    onRespond()
+//                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+//                        isNotSelected.toggle()
+//                    }
                 }
-                .buttonStyle(PrimaryButtonStyle())
+                .buttonStyle(ConditionalButtonStyle(conditional: isNotSelected))
                 .padding()
             }
         }

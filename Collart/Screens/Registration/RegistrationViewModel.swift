@@ -24,11 +24,11 @@ class RegistrationViewModel: ObservableObject {
     
     @Published var searchText: String = ""
 
-    var activityList: [Activity] {
+    var activityList: [Skill] {
         if searchText.isEmpty {
-            return Activity.activities
+            return Skill.skills
         } else {
-            return Activity.activities.filter{ $0.name.lowercased().contains(searchText.lowercased())}
+            return Skill.skills.filter{ $0.text.lowercased().contains(searchText.lowercased())}
         }
     }
     
@@ -40,7 +40,7 @@ class RegistrationViewModel: ObservableObject {
     
     // Функция для попытки входа
     func attemptLogin() {
-        startFakeNetworkCall()
+        sendRegisterUser()
         
     }
     
@@ -48,11 +48,32 @@ class RegistrationViewModel: ObservableObject {
         return password == confirmPassword
     }
     
-    private func startFakeNetworkCall() {
+    private func sendRegisterUser() {
         isLoading = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            self.isLoading = false
-            AuthenticationManager.shared.login()
-        }
+        NetworkService.registerUser(
+            email: mail,
+            password: password,
+            confirmPassword: password,
+            name: name,
+            surname: "",
+            description: "",
+            userPhoto: "",
+            cover: "",
+            searchable: true,
+            experience: "no_experience",
+            skills: [activity],
+            tools: []) { success, error in
+                if success {
+                    NetworkService.loginUser(email: self.mail, password: self.password) { success, error in
+                        if !success {
+                            print("login error")
+                        }
+                        self.isLoading = false
+                    }
+                } else {
+                    self.isLoading = false
+                    print("register error")
+                }
+            }
     }
 }

@@ -10,14 +10,12 @@ import SwiftUI
 @main
 struct CollartApp: App {
     @StateObject var settingsManager = SettingsManager()
-    @StateObject var authManager = AuthenticationManager.shared
-    @State var text: String = ""
-    @State var t: Bool = true
+    @StateObject var userManager = UserManager.shared
 
     // TODO: Упороться в NavigationStack и сделать нормально
     var body: some Scene {
         WindowGroup {
-            if t {
+            if userManager.token != nil {
                 MainView()
                     .environmentObject(settingsManager)
             } else {

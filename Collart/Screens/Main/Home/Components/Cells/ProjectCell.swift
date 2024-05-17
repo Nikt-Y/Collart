@@ -6,51 +6,78 @@
 //
 
 import SwiftUI
+import CachedAsyncImage
 
 struct ProjectCell: View {
     @EnvironmentObject var settingsManager: SettingsManager
-    var project: Project
+    @State var isAvailable: Bool = true
+    @State var isShowingDetailProject = false
+    @State private var isFavorite: Bool = false
+    var project: Order
+    var onRespond: ((_ project: Order, _ completion: @escaping () -> ()) -> ())?
 
-    let projectImage = Image(systemName: "photo.artframe")
-    let projectName = "ZULI POSADA"
-    let roleRequired = "Графический дизайнер"
-    let requirement = "отрисовка логотипа по ТЗ"
-    let experience = "от 2 лет"
-    let tools = "Adobe Illustrator, Figma"
-    let authorAvatar = Image(systemName: "photo.artframe")
-    let authorName = "Jane Kudrinskaia"
+    @State private var isLoading = false
     
     var body: some View {
         VStack {
-            projectImage
-                .resizable()
-                .scaledToFill()
-                .frame(height: 150)
-                .clipped()
-                .foregroundColor(.black)
+            CachedAsyncImage(url: URL(string: !project.projectImage.isEmpty ? project.projectImage : "no url"), urlCache: .imageCache) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                case .empty:
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: settingsManager.currentTheme.primaryColor))
+                case .failure(_):
+                    Image(systemName: "photo.artframe")
+                        .resizable()
+                        .scaledToFill()
+                        .foregroundColor(settingsManager.currentTheme.textColorPrimary)
+                @unknown default:
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: settingsManager.currentTheme.primaryColor))
+                }
+            }
+            .frame(height: 150)
+            .clipped()
+            .contentShape(Rectangle())
             
             VStack(alignment: .leading, spacing: 5) {
-                Text(projectName)
-                    .font(.system(size: settingsManager.textSizeSettings.body))
-                    .foregroundColor(settingsManager.currentTheme.textColorPrimary)
-                    .padding(.bottom, 1)
+                HStack {
+                    Text(project.projectName)
+                        .font(.system(size: settingsManager.textSizeSettings.body))
+                        .foregroundColor(settingsManager.currentTheme.textColorPrimary)
+                        .padding(.bottom, 1)
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        toggleFavoriteStatus()
+                    }) {
+                        Image(systemName: isFavorite ? "heart.fill" : "heart")
+                            .resizable()
+                            .frame(width: 20, height: 20)
+                            .foregroundColor(isFavorite ? .red : settingsManager.currentTheme.textColorPrimary)
+                    }
+                }
                 
-                Text(roleRequired)
+                Text(project.roleRequired)
                     .font(.system(size: settingsManager.textSizeSettings.title))
                     .foregroundColor(settingsManager.currentTheme.textColorPrimary)
                     .bold()
                     .padding(.bottom, 11)
                 
                 Group {
-                    Text("Что требуется: \(requirement)")
+                    Text("Что требуется: \(project.requirement)")
                         .font(.system(size: settingsManager.textSizeSettings.body))
                         .foregroundColor(settingsManager.currentTheme.textDescriptionColor)
                     
-                    Text("Опыт работы: \(experience)")
+                    Text("Опыт работы: \(project.experience)")
                         .font(.system(size: settingsManager.textSizeSettings.body))
                         .foregroundColor(settingsManager.currentTheme.textDescriptionColor)
                     
-                    Text("Программы: \(tools)")
+                    Text("Программы: \(project.tools)")
                         .font(.system(size: settingsManager.textSizeSettings.body))
                         .foregroundColor(settingsManager.currentTheme.textDescriptionColor)
                         .padding(.bottom, 10)
@@ -58,32 +85,91 @@ struct ProjectCell: View {
                 .lineLimit(2)
                 
                 HStack {
-                    authorAvatar
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 30, height: 30)
-                        .clipShape(Circle())
-                        .foregroundColor(.black)
+                    CachedAsyncImage(url: URL(string: !project.authorAvatar.isEmpty ? project.authorAvatar : "no url"), urlCache: .imageCache) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        case .empty:
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: settingsManager.currentTheme.primaryColor))
+                        case .failure(_):
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .scaledToFill()
+                                .foregroundColor(settingsManager.currentTheme.textColorPrimary)
+                        @unknown default:
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: settingsManager.currentTheme.primaryColor))
+                        }
+                    }
+                    .frame(width: 30, height: 30)
+                    .clipShape(Circle())
                     
-                    Text(authorName)
+                    Text(project.authorName)
                         .font(.system(size: settingsManager.textSizeSettings.body))
                         .foregroundColor(settingsManager.currentTheme.textDescriptionColor)
                 }
                 .padding(.bottom, 10)
-                
-                Button("Откликнуться") {
-                    print("Откликнуться")
+
+                Button {
+                    print("button tap")
+                    if isAvailable {
+                        isLoading = true
+                        onRespond?(project) {
+                            print("tap button \(project.projectName)")
+                            isAvailable.toggle()
+                            isLoading = false
+                        }
+                    }
+                } label: {
+                    if isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    } else {
+                        Text(isAvailable ? "Откликнуться" : "Заявка отправлена")
+                    }
                 }
-                .buttonStyle(PrimaryButtonStyle())
+                .buttonStyle(ConditionalButtonStyle(conditional: isAvailable))
+                .disabled(!isAvailable)
             }
             .padding()
         }
         .background(settingsManager.currentTheme.backgroundColor)
+        .onTapGesture {
+            isShowingDetailProject = true
+        }
         .cornerRadius(10)
         .shadow(radius: 5)
         .padding(.bottom, 2)
+        .navigationDestination(isPresented: $isShowingDetailProject) {
+            DetailProjectView(project: project)
+        }
+        .onAppear {
+            isFavorite = UserManager.shared.user.liked.contains { $0.id == project.id }
+        }
+    }
+    
+    private func toggleFavoriteStatus() {
+        if isFavorite {
+            NetworkService.removeOrderFromFavorites(orderId: project.id) { success, error in
+                if success {
+                    UserManager.shared.user.liked.removeAll { $0.id == project.id }
+                    isFavorite = false
+                }
+            }
+        } else {
+            NetworkService.addOrderToFavorites(orderId: project.id) { success, error in
+                if success {
+                    UserManager.shared.user.liked.append(project)
+                    isFavorite = true
+                }
+            }
+        }
     }
 }
+
 
 //struct ProjectCell_Previews: PreviewProvider {
 //    static var previews: some View {

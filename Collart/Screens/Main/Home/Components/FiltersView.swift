@@ -126,7 +126,7 @@ struct FiltersView: View {
             Spacer()
             
             Button("Применить") {
-                viewModel.fetchDataWithFilters()
+//                viewModel.fetchDataWithFilters()
                 isActive = false
             }
             .buttonStyle(PrimaryButtonStyle())

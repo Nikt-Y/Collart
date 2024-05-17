@@ -14,8 +14,13 @@ struct FilterOption: Identifiable, Hashable {
 }
 
 class HomeViewModel: ObservableObject {
-    @Published var projects: [Project] = []
+    @Published var projects: [Order] = []
     @Published var specialists: [Specialist] = []
+    
+    // Отправление приглашений на проект
+    @Published var showInviteSelect: Bool = false
+    @Published var selectedProjectsForInvite: [Order] = []
+    @Published var selectedSpecialist: Specialist?
     
     // Фильтры для специальностей, опыта и инструментов
     @Published var specialtyFilters: [FilterOption] = []
@@ -31,29 +36,132 @@ class HomeViewModel: ObservableObject {
         loadFilters()
     }
     
-    func loadFilters() {
-        // TODO: Сделать запоминание последних использованных фильтров в юзердефолтс
-        specialtyFilters = [.init(text: "Саунд", isSelected: false), .init(text: "Фотография", isSelected: false), .init(text: "3D", isSelected: false), .init(text: "Дизайн", isSelected: false), .init(text: "Иллюстратор", isSelected: false), .init(text: "Бездельник", isSelected: false)]
-        experienceFilters = [.init(text: "Нет опыта", isSelected: false), .init(text: "От 1 года до 3 лет", isSelected: false) , .init(text: "От 3 до 5 лет")]
-        toolFilters = [.init(text: "Тест 1"), .init(text: "Тест 2"), .init(text: "Тест 3"), .init(text: "Тест 4"), .init(text: "Тест 5"),]
+    func handleResponse(for project: Order, completion: @escaping () -> ()) {
+        NetworkService.Interactions.responce(orderID: project.id, ownerId: project.ownerID) { succes, error in
+            completion()
+        }
     }
     
-    func fetchDataWithFilters() {
-        projects = [
-            Project(projectImage: URL(string: "https://example.com/projectImage1.png")!, projectName: "ZULI POSADA", roleRequired: "Графический дизайнер", requirement: "отрисовка логотипа по ТЗ", experience: "от 2 лет", tools: "Adobe Illustrator, Figma", authorAvatar: URL(string: "https://example.com/authorAvatar1.png")!, authorName: "Jane Kudrinskaia"),
-            Project(projectImage: URL(string: "https://example.com/projectImage1.png")!, projectName: "ZULI POSADA", roleRequired: "Графический дизайнер", requirement: "отрисовка логотипа по ТЗ", experience: "от 2 лет", tools: "Adobe Illustrator, Figma", authorAvatar: URL(string: "https://example.com/authorAvatar1.png")!, authorName: "Jane Kudrinskaia"),
-            Project(projectImage: URL(string: "https://example.com/projectImage1.png")!, projectName: "ZULI POSADA", roleRequired: "Графический дизайнер", requirement: "отрисовка логотипа по ТЗ", experience: "от 2 лет", tools: "Adobe Illustrator, Figma", authorAvatar: URL(string: "https://example.com/authorAvatar1.png")!, authorName: "Jane Kudrinskaia"),
-            Project(projectImage: URL(string: "https://example.com/projectImage1.png")!, projectName: "ZULI POSADA", roleRequired: "Графический дизайнер", requirement: "отрисовка логотипа по ТЗ", experience: "от 2 лет", tools: "Adobe Illustrator, Figma", authorAvatar: URL(string: "https://example.com/authorAvatar1.png")!, authorName: "Jane Kudrinskaia"),
-            // Добавьте другие тестовые проекты
-        ]
+    func handleInvite(spec: Specialist) {
+//        let t = UserManager.shared.user
+        selectedSpecialist = spec
+        showInviteSelect.toggle()
         
-        specialists = [
-            Specialist(backgroundImage: URL(string: "https://example.com/backgroundImage1.png")!, specImage: URL(string: "https://example.com/specImage1.png")!, name: "Luis Moreno", profession: "Цифровой художник", experience: "2 года", tools: "Adobe Illustrator, Adobe Photoshop, Corel Painter, Procreate"),
-            Specialist(backgroundImage: URL(string: "https://example.com/backgroundImage1.png")!, specImage: URL(string: "https://example.com/specImage1.png")!, name: "Luis Moreno", profession: "Цифровой художник", experience: "2 года", tools: "Adobe Illustrator, Adobe Photoshop, Corel Painter, Procreate"),
-            Specialist(backgroundImage: URL(string: "https://example.com/backgroundImage1.png")!, specImage: URL(string: "https://example.com/specImage1.png")!, name: "Luis Moreno", profession: "Цифровой художник", experience: "2 года", tools: "Adobe Illustrator, Adobe Photoshop, Corel Painter, Procreate"),
-            // Добавьте другие тестовые специалисты
+        print("Откликнулся на проект \(spec.name)")
+    }
+    
+    func loadFilters() {
+        // TODO: Сделать запоминание последних использованных фильтров в юзердефолтс
+        
+        toolFilters = [
+            .init(text: "Postman", isSelected: false),
+            .init(text: "Adobe Photoshop", isSelected: false),
+            .init(text: "Adobe Illustrator", isSelected: false),
+            .init(text: "Adobe InDesign", isSelected: false),
+            .init(text: "Sketch", isSelected: false),
+            .init(text: "Figma", isSelected: false),
+            .init(text: "Blender", isSelected: false),
+            .init(text: "Autodesk Maya", isSelected: false),
+            .init(text: "Affinity Designer", isSelected: false),
+            .init(text: "CorelDRAW", isSelected: false),
+            .init(text: "Adobe XD", isSelected: false),
+            .init(text: "Cinema 4D", isSelected: false),
+            .init(text: "InVision", isSelected: false),
+            .init(text: "Xcode", isSelected: false),
+            .init(text: "Visual Studio Code", isSelected: false),
+            .init(text: "Docker", isSelected: false),
+            .init(text: "PostgresSQL", isSelected: false),
+            .init(text: "Node.js", isSelected: false),
+            .init(text: "MongoDB", isSelected: false),
+            .init(text: "React", isSelected: false),
+            .init(text: "Unity", isSelected: false),
+            .init(text: "Angular", isSelected: false),
+            .init(text: "Firebase", isSelected: false),
+            .init(text: "Laravel", isSelected: false),
+            .init(text: "Vue.js", isSelected: false),
+            .init(text: "Zoom API", isSelected: false)
         ]
-        print("Fetching data with current filters...")
+        experienceFilters = [.init(text: "Нет опыта", isSelected: false), .init(text: "От 1 года до 3 лет", isSelected: false) , .init(text: "От 3 до 5 лет"), .init(text: "Более 5 лет")]
+    }
+    
+    func searchText() {
+        // TODO: Сделать поиск по тексту
+    }
+    
+    func fetchProjects(completion: @escaping () -> ()) {
+        NetworkService.fetchListOfOrders { result in
+            switch result {
+            case .success(let orders):
+                // Обработайте успешное получение списка заказов, например, обновите интерфейс
+                print("Orders: \(orders)")
+                self.projects = []
+                for order in orders {
+                    var proj = Order(
+                        id: order.order.id,
+                        projectImage: order.order.image,
+                        projectName: order.order.title,
+                        roleRequired: order.skill.nameRu,
+                        requirement: order.order.taskDescription,
+                        experience: Experience.fromString(order.order.experience).text,
+                        tools: order.tools.joined(separator: ", "),
+                        authorAvatar: order.order.owner.userPhoto ?? "",
+                        authorName: "\(order.order.owner.name!) \(order.order.owner.surname!)",
+                        ownerID: order.order.owner.id,
+                        description: order.order.projectDescription)
+                    self.projects.append(proj)
+                }
+                self.applyFilters()
+                
+            case .failure(let error):
+                // Обработайте ошибку, например, показав пользователю сообщение
+                print("Error: \(error.localizedDescription)")
+            }
+            completion()
+        }
+    }
+    
+    func fetchSpecialists(completion: @escaping () -> ()) {
+        let language = UserDefaults.standard.string(forKey: "language") ?? "ru"
+        NetworkService.fetchListOfUsers { result in
+            switch result {
+            case .success(let users):
+                self.specialists = []
+                print("users: \(users)")
+                for user in users {
+                    var spec = Specialist(
+                        id: user.user.id,
+                        backgroundImage: user.user.cover ?? "",
+                        specImage: user.user.userPhoto ?? "",
+                        name: "\(user.user.name!) \(user.user.surname!)".trimmingCharacters(in: [" "]),
+                        profession: user.skills.compactMap(
+                            {
+                                if $0.primary ?? false {
+                                    return language == "ru" ? $0.nameRu : $0.nameEn
+                                } else {
+                                    return nil
+                                }
+                            }).joined(separator: ", "),
+                        experience: Experience.fromString(user.user.experience ?? "").text,
+                        tools: user.tools.joined(separator: ", "),
+                        email: user.user.email ?? "",
+                        subProfession: user.skills.compactMap(
+                            {
+                                if !($0.primary ?? false) {
+                                    return language == "ru" ? $0.nameRu : $0.nameEn
+                                } else {
+                                    return nil
+                                }
+                            }).joined(separator: ", ")
+                    )
+                    self.specialists.append(spec)
+                }
+                self.applyFilters()
+
+            case .failure(let error):
+                print("Error: \(error.localizedDescription)")
+            }
+            completion()
+        }
     }
     
     // Функции для обновления выбранного состояния
@@ -114,4 +222,31 @@ class HomeViewModel: ObservableObject {
         experienceFilters = experienceFilters.map { FilterOption(text: $0.text, isSelected: false) }
         toolFilters = toolFilters.map { FilterOption(text: $0.text, isSelected: false) }
     }
+    
+    func applyFilters() {
+        // Сначала получаем тексты выбранных фильтров
+        let selectedSpecialties = specialtyFilters.filter { $0.isSelected }.map { $0.text }
+        let selectedExperiences = experienceFilters.filter { $0.isSelected }.map { $0.text }
+        let selectedTools = toolFilters.filter { $0.isSelected }.map { $0.text }
+        
+        // Фильтрация проектов
+        projects = projects.filter { project in
+            // Проверяем, соответствует ли проект выбранным специализациям, опыту и инструментам
+            let matchesSpecialty = selectedSpecialties.isEmpty || selectedSpecialties.contains(where: project.roleRequired.contains)
+            let matchesExperience = selectedExperiences.isEmpty || selectedExperiences.contains(where: project.experience.contains)
+            let matchesTools = selectedTools.isEmpty || selectedTools.contains(where: project.tools.contains)
+            
+            return matchesSpecialty && matchesExperience && matchesTools
+        }
+        
+        // Фильтрация специалистов
+        specialists = specialists.filter { specialist in
+            let matchesProfession = selectedSpecialties.isEmpty || selectedSpecialties.contains(where: specialist.profession.contains)
+            let matchesExperience = selectedExperiences.isEmpty || selectedExperiences.contains(where: specialist.experience.contains)
+            let matchesTools = selectedTools.isEmpty || selectedTools.contains(where: specialist.tools.contains)
+            
+            return matchesProfession && matchesExperience && matchesTools
+        }
+    }
+    
 }

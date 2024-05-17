@@ -7,43 +7,49 @@
 
 import SwiftUI
 
-struct CustomPicker: View {
+protocol Pickable {
+    var displayValue: String { get }
+    static var allCases: [Self] { get }
+}
+
+struct CustomPicker<T: Pickable & Hashable>: View where T: CaseIterable {
     @EnvironmentObject var settingsManager: SettingsManager
-    
-    @Binding var selectedTab: Tab
+    @Binding var selectedTab: T
+    var expandsBeyondScreen: Bool = false // Новый флаг
     
     var body: some View {
+        Group {
+            if expandsBeyondScreen {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    pickerContent
+                }
+            } else {
+                pickerContent
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: selectedTab)
+    }
+    
+    // Вынесенное содержимое пикера для удобства
+    private var pickerContent: some View {
         HStack(spacing: 0) {
-            VStack(spacing: 0) {
-                Text("Проекты")
-                    .font(.system(size: settingsManager.textSizeSettings.subTitle))
-                    .foregroundColor(selectedTab == .projects ? settingsManager.currentTheme.primaryColor : settingsManager.currentTheme.textColorLightPrimary)
-                    .padding(.vertical, 10)
-                Rectangle()
-                    .frame(width: .infinity, height: 2)
-                    .foregroundColor(selectedTab == .projects ? settingsManager.currentTheme.primaryColor : settingsManager.currentTheme.backgroundColor)
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                selectedTab = .projects
-            }
-            
-            VStack(spacing: 0) {
-                Text("Специалисты")
-                    .font(.system(size: settingsManager.textSizeSettings.subTitle))
-                    .foregroundColor(selectedTab == .specialists ? settingsManager.currentTheme.primaryColor : settingsManager.currentTheme.textColorLightPrimary)
-                    .padding(.vertical, 10)
-                Rectangle()
-                    .frame(width: .infinity, height: 2)
-                    .foregroundColor(selectedTab == .specialists ? settingsManager.currentTheme.primaryColor : settingsManager.currentTheme.backgroundColor)
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                selectedTab = .specialists
+            ForEach(T.allCases, id: \.self) { tab in
+                VStack(spacing: 0) {
+                    Text(tab.displayValue)
+                        .font(.system(size: settingsManager.textSizeSettings.subTitle))
+                        .foregroundColor(selectedTab == tab ? settingsManager.currentTheme.primaryColor : settingsManager.currentTheme.textColorLightPrimary)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, expandsBeyondScreen ? 11 : 0)
+                    Rectangle()
+                        .frame(width: .infinity, height: 2)
+                        .foregroundColor(selectedTab == tab ? settingsManager.currentTheme.primaryColor : settingsManager.currentTheme.backgroundColor)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    selectedTab = tab
+                }
             }
         }
         .background(settingsManager.currentTheme.backgroundColor)
-        .animation(.easeInOut(duration: 0.2), value: selectedTab)
     }
 }
-

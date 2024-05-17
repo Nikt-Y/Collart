@@ -23,7 +23,7 @@ struct RegistrationView: View {
                 Spacer()
                 
                 TextErrorField(
-                    placeHolder: "Имя и фамилия",
+                    placeHolder: "Имя",
                     fieldText: $viewModel.name,
                     isValid: $viewModel.isValidName,
                     validateMethod: Validator.validateName,
@@ -31,7 +31,7 @@ struct RegistrationView: View {
                 .padding(.bottom, 3)
                 
                 TextErrorField(
-                    placeHolder: "Логин",
+                    placeHolder: "Фамилия",
                     fieldText: $viewModel.login,
                     isValid: $viewModel.isValidLogin,
                     validateMethod: Validator.validateLogin,
@@ -70,7 +70,7 @@ struct RegistrationView: View {
                 } label: {
                     HStack {
                         if viewModel.activity.isEmpty {
-                            Text("Сфера деятельности")
+                            Text("Выберите специальность")
                         } else {
                             Text("\(viewModel.activity)")
                         }
@@ -88,14 +88,18 @@ struct RegistrationView: View {
                 
                 HStack {
                     Button {
-                        // TODO: Реализовать
+                        // TODO: Реализовать добавление специальности
                     } label: {
                         Text("Добавить специальность")
-
+                            .foregroundColor(settingsManager.currentTheme.textColorOnPrimary)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal , 8)
+                            .background(settingsManager.currentTheme.primaryColor)
+                            .clipShape(Capsule())
                     }
                     Spacer()
                 }
-                .padding(.horizontal, 10)
+                .padding(.horizontal, 2)
                             
                 Spacer()
                 
@@ -109,6 +113,7 @@ struct RegistrationView: View {
                 .padding(.bottom, 6)
             }
             .padding(20)
+            .ignoresSafeArea(.keyboard, edges: .bottom)
             
             if viewModel.isLoading {
                 ZStack {
@@ -150,13 +155,13 @@ struct RegistrationView: View {
                     
                     List(viewModel.activityList) { activity in
                         HStack {
-                            Text(activity.name)
+                            Text(activity.text)
                                 .foregroundColor(settingsManager.currentTheme.textColorPrimary)
                             Spacer()
                         }
                         .listRowBackground(settingsManager.currentTheme.backgroundColor)
                         .onTapGesture {
-                            viewModel.activity = activity.name
+                            viewModel.activity = activity.text
                             viewModel.isSelectedActivity = true
                             presentActivitiesSheet = false
                         }

@@ -31,6 +31,7 @@ protocol TextSizable {
     var body: CGFloat { get }
     var pageName: CGFloat { get }
     var semiPageName: CGFloat { get }
+    var little: CGFloat { get }
     // Можете добавить другие свойства для разных стилей текста
     
     func adjustFontSize(for sizeCategory: ContentSizeCategory) -> Self
@@ -64,6 +65,7 @@ struct DefaultTextSizes: TextSizable {
     var title: CGFloat = 18
     var subTitle: CGFloat = 16
     var body: CGFloat = 16
+    var little: CGFloat = 14
     
     func adjustFontSize(for sizeCategory: ContentSizeCategory) -> Self {
         var adjustedSizes = self
@@ -78,6 +80,11 @@ struct DefaultTextSizes: TextSizable {
         }
         return adjustedSizes
     }
+}
+
+enum Language: String {
+    case ru = "ru"
+    case en = "en"
 }
 
 class SettingsManager: ObservableObject {

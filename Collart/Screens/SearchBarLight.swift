@@ -21,6 +21,7 @@ struct SearchBarLight: View {
                         Text("Поиск ...")
                 .foregroundColor(settingsManager.currentTheme.textColorLightPrimary)
             )
+            .foregroundColor(settingsManager.currentTheme.textColorPrimary)
             .padding(7)
             .padding(.horizontal, 25)
             .background(settingsManager.currentTheme.searchColor)

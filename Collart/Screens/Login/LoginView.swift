@@ -26,7 +26,7 @@ struct LoginView: View {
                 .ignoresSafeArea()
             
             VStack {
-                TextErrorField(placeHolder: "Логин", fieldText: $viewModel.login, isValid: $viewModel.isValidLogin)
+                TextErrorField(placeHolder: "Почта", fieldText: $viewModel.login, isValid: $viewModel.isValidLogin)
                     .padding(.bottom, 3)
                 
                 PasswordField(placeHolder: "Пароль", fieldText: $viewModel.password, isValid: $viewModel.isValidPassword)
@@ -60,7 +60,7 @@ struct LoginView: View {
                 .padding(.bottom, 4)
                 
                 // TODO: Вход через это + мб вынести эту вью в отдельный файл
-                BottomView(googleAction: {}, facebookAction: {}, appleAction: {})
+//                BottomView(googleAction: {}, facebookAction: {}, appleAction: {})
             }
             .padding(20)
             

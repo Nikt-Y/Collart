@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "7A164465-5DE1-4685-9806-C9D514B5B0A9"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "E9B6E148-5D00-4AAA-8AF6-BE69B6F1AEB6"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Collart/Services/NetworkService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "101"
+            endingLineNumber = "101"
+            landmarkName = "registerUser(email:password:confirmPassword:name:surname:description:userPhoto:cover:searchable:experience:skills:tools:completion:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "E9B6E148-5D00-4AAA-8AF6-BE69B6F1AEB6 - fc0dd2711c1aec4c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 @Sendable (Swift.Optional&lt;Foundation.Data&gt;, Swift.Optional&lt;__C.NSURLResponse&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in static Collart.NetworkService.registerUser(email: Swift.String, password: Swift.String, confirmPassword: Swift.String, name: Swift.String, surname: Swift.String, description: Swift.String, userPhoto: Swift.String, cover: Swift.String, searchable: Swift.Bool, experience: Swift.String, skills: Swift.Array&lt;Swift.String&gt;, tools: Swift.Array&lt;Swift.String&gt;, completion: (Swift.Bool, Swift.Optional&lt;Swift.Error&gt;) -&gt; ()) -&gt; ()"
+                  moduleName = "Collart"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/noyakunyushkin/Desktop/%D0%94%D0%B8%D0%BF%D0%BB%D0%BE%D0%BC/%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82/Collart/Collart/Services/NetworkService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "101"
+                  endingLineNumber = "101">
+               </Location>
+               <Location
+                  uuid = "E9B6E148-5D00-4AAA-8AF6-BE69B6F1AEB6 - fc0dd2711c1aec4c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 @Sendable (Swift.Optional&lt;Foundation.Data&gt;, Swift.Optional&lt;__C.NSURLResponse&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in static Collart.NetworkService.registerUser(email: Swift.String, password: Swift.String, confirmPassword: Swift.String, name: Swift.String, surname: Swift.String, description: Swift.String, userPhoto: Swift.String, cover: Swift.String, searchable: Swift.Bool, experience: Swift.String, skills: Swift.Array&lt;Swift.String&gt;, tools: Swift.Array&lt;Swift.String&gt;, completion: (Swift.Bool, Swift.Optional&lt;Swift.Error&gt;) -&gt; ()) -&gt; ()"
+                  moduleName = "Collart"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/noyakunyushkin/Desktop/%D0%94%D0%B8%D0%BF%D0%BB%D0%BE%D0%BC/%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82/Collart/Collart/Services/NetworkService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "101"
+                  endingLineNumber = "101">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "E807575F-E9A4-482D-9D58-7B2B92424FBA"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Collart/Services/NetworkService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "877"
+            endingLineNumber = "877"
+            landmarkName = "removeOrderFromFavorites(orderId:completion:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "E807575F-E9A4-482D-9D58-7B2B92424FBA - 98de07516d09f0bf"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 @Sendable (Swift.Optional&lt;Foundation.Data&gt;, Swift.Optional&lt;__C.NSURLResponse&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in static Collart.NetworkService.removeOrderFromFavorites(orderId: Swift.String, completion: (Swift.Bool, Swift.Optional&lt;Swift.Error&gt;) -&gt; ()) -&gt; ()"
+                  moduleName = "Collart"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/noyakunyushkin/Desktop/%D0%94%D0%B8%D0%BF%D0%BB%D0%BE%D0%BC/%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82/Collart/Collart/Services/NetworkService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "877"
+                  endingLineNumber = "877">
+               </Location>
+               <Location
+                  uuid = "E807575F-E9A4-482D-9D58-7B2B92424FBA - 98de07516d09f0bf"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 @Sendable (Swift.Optional&lt;Foundation.Data&gt;, Swift.Optional&lt;__C.NSURLResponse&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in static Collart.NetworkService.removeOrderFromFavorites(orderId: Swift.String, completion: (Swift.Bool, Swift.Optional&lt;Swift.Error&gt;) -&gt; ()) -&gt; ()"
+                  moduleName = "Collart"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/noyakunyushkin/Desktop/%D0%94%D0%B8%D0%BF%D0%BB%D0%BE%D0%BC/%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82/Collart/Collart/Services/NetworkService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "877"
+                  endingLineNumber = "877">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "43B6257A-632B-452E-877B-6A0820443D47"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Collart/Screens/Main/Chat/ChatsListViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "35"
+            endingLineNumber = "35"
+            landmarkName = "fetchChats()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "43B6257A-632B-452E-877B-6A0820443D47 - 46a27173e8cd43fd"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 @Swift.MainActor () -&gt; () in closure #1 (Swift.Result&lt;Swift.Array&lt;Collart.NetworkService.Chat.Chat&gt;, Swift.Error&gt;) -&gt; () in Collart.ChatsListViewModel.fetchChats() -&gt; ()"
+                  moduleName = "Collart"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/noyakunyushkin/Desktop/%D0%94%D0%B8%D0%BF%D0%BB%D0%BE%D0%BC/%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82/Collart/Collart/Screens/Main/Chat/ChatsListViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "35"
+                  endingLineNumber = "35">
+               </Location>
+               <Location
+                  uuid = "43B6257A-632B-452E-877B-6A0820443D47 - 57a24d4fe7baef0c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Collart.NetworkService.Chat.Chat) -&gt; Collart.Chat in closure #1 @Swift.MainActor () -&gt; () in closure #1 (Swift.Result&lt;Swift.Array&lt;Collart.NetworkService.Chat.Chat&gt;, Swift.Error&gt;) -&gt; () in Collart.ChatsListViewModel.fetchChats() -&gt; ()"
+                  moduleName = "Collart"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/noyakunyushkin/Desktop/%D0%94%D0%B8%D0%BF%D0%BB%D0%BE%D0%BC/%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82/Collart/Collart/Screens/Main/Chat/ChatsListViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "35"
+                  endingLineNumber = "35">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F5E2D71A-3976-4E6F-BF6E-3B3FD65B57CF"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Collart/Screens/Main/Profile/ProfileView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "308"
+            endingLineNumber = "308"
+            landmarkName = "loadData(for:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "F5E2D71A-3976-4E6F-BF6E-3B3FD65B57CF - c1cbf19b8ad03f6f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.Result&lt;Swift.Array&lt;Collart.NetworkService.PortfolioProject&gt;, Swift.Error&gt;) -&gt; () in Collart.ProfileView.loadData(for: Collart.ProfileTab) -&gt; ()"
+                  moduleName = "Collart"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/noyakunyushkin/Desktop/%D0%94%D0%B8%D0%BF%D0%BB%D0%BE%D0%BC/%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82/Collart/Collart/Screens/Main/Profile/ProfileView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "308"
+                  endingLineNumber = "308">
+               </Location>
+               <Location
+                  uuid = "F5E2D71A-3976-4E6F-BF6E-3B3FD65B57CF - 66c047c0693a5f1f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Collart.NetworkService.PortfolioProject) -&gt; Collart.PortfolioProject in closure #1 (Swift.Result&lt;Swift.Array&lt;Collart.NetworkService.PortfolioProject&gt;, Swift.Error&gt;) -&gt; () in Collart.ProfileView.loadData(for: Collart.ProfileTab) -&gt; ()"
+                  moduleName = "Collart"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/noyakunyushkin/Desktop/%D0%94%D0%B8%D0%BF%D0%BB%D0%BE%D0%BC/%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82/Collart/Collart/Screens/Main/Profile/ProfileView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "308"
+                  endingLineNumber = "308">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "3C5FEB6F-4A15-4E40-9A7A-5BD559027278"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Collart/Screens/Main/DetailSpecialitst/DetailSpecialitstView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "107"
+            endingLineNumber = "107"
+            landmarkName = "body"
+            landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "BF3074D7-2BA2-4136-928B-A7C10EAC12B3"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Collart/Screens/Models.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "219"
+            endingLineNumber = "219"
+            landmarkName = "transformToSpecialist(from:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "EBE8FFF1-E86D-4F10-84DF-35BD8FB0C210"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Collart/Screens/Main/Home/HomeViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "149"
+            endingLineNumber = "149"
+            landmarkName = "fetchSpecialists(completion:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>
