@@ -2,35 +2,36 @@
 //  HomeViewModel.swift
 //  Collart
 //
-//  Created by Nik Y on 15.02.2024.
-//
 
 import Foundation
 import SwiftUI
 
+// MARK: - FilterOption
 struct FilterOption: Identifiable, Hashable {
     var id: String { text }
     let text: String
     var isSelected: Bool = false
 }
 
+// MARK: - HomeViewModel
 class HomeViewModel: ObservableObject {
+    @Environment(\.networkService) private var networkService: NetworkService
     @Published var projects: [Order] = []
     @Published var specialists: [Specialist] = []
     var projectList: [Order] = []
     var specialistList: [Specialist] = []
     
-    // Отправление приглашений на проект
+    // Sending project invitations
     @Published var showInviteSelect: Bool = false
     @Published var selectedProjectsForInvite: [Order] = []
     @Published var selectedSpecialist: Specialist?
     
-    // Фильтры для специальностей, опыта и инструментов
+    // Filters for specialties, experience and tools
     @Published var specialtyFilters: [FilterOption] = []
     @Published var experienceFilters: [FilterOption] = []
     @Published var toolFilters: [FilterOption] = []
     
-    // Поиск
+    // Search
     @Published var searchText = ""
     @Published var specialtySearchText = ""
     @Published var experienceSearchText = ""
@@ -38,21 +39,23 @@ class HomeViewModel: ObservableObject {
     
     @Published var isLoading = true
     
+    private var networkServiceDelegate: SkillsServiceDelegate & SearchServiceDelegate & InteractionsServiceDelegate {
+        networkService
+    }
+    
     init() {
         loadFilters()
     }
     
     func handleResponse(for project: Order, completion: @escaping () -> ()) {
-        NetworkService.Interactions.responce(orderID: project.id, ownerId: project.ownerID) { succes, error in
+        networkServiceDelegate.responce(orderID: project.id, ownerId: project.ownerID) { success, error in
             completion()
         }
     }
     
     func handleInvite(spec: Specialist) {
-//        let t = UserManager.shared.user
         selectedSpecialist = spec
         showInviteSelect.toggle()
-        
         print("Откликнулся на проект \(spec.name)")
     }
     
@@ -88,37 +91,41 @@ class HomeViewModel: ObservableObject {
         experienceFilters = [.init(text: "Нет опыта", isSelected: false), .init(text: "От 1 года до 3 лет", isSelected: false) , .init(text: "От 3 до 5 лет"), .init(text: "Более 5 лет")]
     }
     
+    func fetchSkills(completion: @escaping (Bool) -> Void) {
+        networkServiceDelegate.fetchSkills { result in
+            switch result {
+            case .success(let skills):
+                self.specialtyFilters = skills.map { FilterOption(text: $0.text) }
+                completion(true)
+            case .failure:
+                print("skills fetch error")
+                completion(true)
+            }
+        }
+    }
     
-    func fetchProjects(completion: @escaping () -> ()) {
-        NetworkService.fetchListOfOrders { result in
+    func fetchProjects(completion: @escaping () -> Void) {
+        networkServiceDelegate.fetchListOfOrders { result in
             switch result {
             case .success(let orders):
-                // Обработайте успешное получение списка заказов, например, обновите интерфейс
                 print("Orders: \(orders)")
-                self.projectList = orders.map({ order in
-                    Order.transformToOrder(from: order)
-                })
+                self.projectList = orders.map { Order.transformToOrder(from: $0) }
                 self.applyFilters()
-                
             case .failure(let error):
-                // Обработайте ошибку, например, показав пользователю сообщение
                 print("Error: \(error.localizedDescription)")
             }
             completion()
         }
     }
     
-    func fetchSpecialists(completion: @escaping () -> ()) {
+    func fetchSpecialists(completion: @escaping () -> Void) {
         let language = UserDefaults.standard.string(forKey: "language") ?? "ru"
-        NetworkService.fetchListOfUsers { result in
+        networkServiceDelegate.fetchListOfUsers { result in
             switch result {
             case .success(let users):
-                self.specialistList = users.map({ user in
-                    Specialist.transformToSpecialist(from: user)
-                })
+                self.specialistList = users.map { Specialist.transformToSpecialist(from: $0) }
                 print("users: \(users)")
                 self.applyFilters()
-
             case .failure(let error):
                 print("Error: \(error.localizedDescription)")
             }
@@ -126,7 +133,21 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    // Функции для обновления выбранного состояния
+    func fetchData(for tab: Tab, completion: @escaping () -> Void) {
+        isLoading = true
+        switch tab {
+        case .projects:
+            fetchProjects {
+                completion()
+            }
+        case .specialists:
+            fetchSpecialists {
+                completion()
+            }
+        }
+    }
+    
+    // Functions for updating the selected state
     func selectSpecialty(_ option: FilterOption) {
         if let index = specialtyFilters.firstIndex(where: { $0.id == option.id }) {
             specialtyFilters[index].isSelected.toggle()
@@ -148,7 +169,7 @@ class HomeViewModel: ObservableObject {
         sortSelectedTools()
     }
     
-    // Функции для сортировки выбранных фильтров
+    // Functions for sorting selected filters
     func sortSelectedSpecialties() {
         specialtyFilters.sort { $0.isSelected && !$1.isSelected }
     }
@@ -174,9 +195,9 @@ class HomeViewModel: ObservableObject {
     }
     
     var isFiltersSelected: Bool {
-        specialtyFilters.contains(where: { $0.isSelected }) ||
-        experienceFilters.contains(where: { $0.isSelected }) ||
-        toolFilters.contains(where: { $0.isSelected })
+        specialtyFilters.contains { $0.isSelected } ||
+        experienceFilters.contains { $0.isSelected } ||
+        toolFilters.contains { $0.isSelected }
     }
     
     var filteredOrders: [Order] {
@@ -198,13 +219,11 @@ class HomeViewModel: ObservableObject {
     }
     
     func applyFilters() {
-        // Сначала получаем тексты выбранных фильтров
         let selectedSpecialties = specialtyFilters.filter { $0.isSelected }.map { $0.text }
         let selectedExperiences = experienceFilters.filter { $0.isSelected }.map { $0.text }
         let selectedTools = toolFilters.filter { $0.isSelected }.map { $0.text }
         
         let filteredProjects = projectList.filter { project in
-            // Проверяем, соответствует ли проект выбранным специализациям, опыту и инструментам
             let matchesSpecialty = selectedSpecialties.isEmpty || selectedSpecialties.contains(where: project.roleRequired.contains)
             let matchesExperience = selectedExperiences.isEmpty || selectedExperiences.contains(where: project.experience.contains)
             let matchesTools = selectedTools.isEmpty || selectedTools.contains(where: project.tools.contains)
@@ -222,7 +241,7 @@ class HomeViewModel: ObservableObject {
         projects = []
         specialists = []
         isLoading = true
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.projects = filteredProjects
             self.specialists = filteredSpecs

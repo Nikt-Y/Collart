@@ -2,11 +2,10 @@
 //  TextErrorField.swift
 //  Collart
 //
-//  Created by Nik Y on 28.01.2024.
-//
 
 import SwiftUI
 
+// MARK: - TextErrorField
 struct TextErrorField: View {
     @EnvironmentObject var settingsManager: SettingsManager
     
@@ -57,6 +56,7 @@ struct TextErrorField: View {
     }
 }
 
+// MARK: - TextErrorEditor
 struct TextErrorEditor: View {
     @EnvironmentObject var settingsManager: SettingsManager
     
@@ -121,6 +121,7 @@ struct TextErrorEditor: View {
     }
 }
 
+// MARK: - DateErrorPicker
 struct DateErrorPicker: View {
     @EnvironmentObject var settingsManager: SettingsManager
 
@@ -164,6 +165,7 @@ struct DateErrorPicker: View {
     }
 }
 
+// MARK: - ImagePickerField
 struct ImagePickerField: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @Binding var image: UIImage?
@@ -203,7 +205,7 @@ struct ImagePickerField: View {
     @State private var isShowingPicker = false
 }
 
-
+// MARK: - ImagePicker
 struct ImagePicker: UIViewControllerRepresentable {
     @Binding var image: UIImage?
     @Environment(\.presentationMode) var presentationMode
@@ -227,7 +229,10 @@ struct ImagePicker: UIViewControllerRepresentable {
             self.parent = parent
         }
 
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]
+        ) {
             if let image = info[.originalImage] as? UIImage {
                 parent.image = image
             }
@@ -242,6 +247,7 @@ struct ImagePicker: UIViewControllerRepresentable {
 
 import UniformTypeIdentifiers
 
+// MARK: - FilePicker
 struct FilePicker: UIViewControllerRepresentable {
     @Binding var fileUrls: [URL]
     @Environment(\.presentationMode) var presentationMode
@@ -276,6 +282,7 @@ struct FilePicker: UIViewControllerRepresentable {
     }
 }
 
+// MARK: - FilePickerField
 struct FilePickerField: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @Binding var fileUrls: [URL]

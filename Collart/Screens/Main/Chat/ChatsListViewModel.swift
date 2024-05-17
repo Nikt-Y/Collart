@@ -2,33 +2,20 @@
 //  ChatsListViewModel.swift
 //  Collart
 //
-//  Created by Nik Y on 22.04.2024.
-//
 
-import Foundation
-
-enum MessageStatus {
-    case readed
-    case unreaded
-}
-
-struct Chat {
-    let id: UUID = UUID()
-    let user: Specialist
-    var lastMessage: String
-    var numOfUnread: Int
-    var status: MessageStatus
-    var timeLast: Date
-}
-
-var isBackFromChat = false
+import SwiftUI
 
 class ChatsListViewModel: ObservableObject {
+    @Environment(\.networkService) private var networkService: NetworkService
     @Published var chats: [Chat] = []
 
+    private var chatService: ChatServiceDelegate {
+        networkService
+    }
+    
     func fetchChats(completion: @escaping (Bool) -> ()) {
         let userId = UserManager.shared.user.id
-        NetworkService.Chat.fetchChats(userId: userId) { [weak self] result in
+        chatService.fetchChats(userId: userId) { [weak self] result in
             switch result {
             case .success(let chats):
                 DispatchQueue.main.async {

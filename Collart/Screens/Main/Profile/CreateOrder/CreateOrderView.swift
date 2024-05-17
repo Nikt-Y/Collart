@@ -2,8 +2,6 @@
 //  CreateOrderView.swift
 //  Collart
 //
-//  Created by Nik Y on 23.04.2024.
-//
 
 import SwiftUI
 
@@ -243,9 +241,4 @@ struct CreateOrderView: View {
             .presentationDetents([.medium, .large])
         }
     }
-}
-
-#Preview {
-    CreateOrderView()
-        .environmentObject(SettingsManager())
 }

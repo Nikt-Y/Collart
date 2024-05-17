@@ -2,12 +2,10 @@
 //  Styles.swift
 //  Collart
 //
-//  Created by Nik Y on 08.01.2024.
-//
 
 import SwiftUI
 
-// MARK: Стили кнопок
+// MARK: - Button Styles
 struct PrimaryButtonStyle: ButtonStyle {
     @EnvironmentObject var settings: SettingsManager
     
@@ -40,7 +38,6 @@ struct ConditionalButtonStyle: ButtonStyle {
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }
-
 
 struct SecondaryButtonStyle: ButtonStyle {
     @EnvironmentObject var settings: SettingsManager
@@ -76,8 +73,7 @@ struct IconButtonStyle: ButtonStyle {
     }
 }
 
-
-// MARK: Стили текста
+// MARK: - Text Styles
 struct CustomTextStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
@@ -92,7 +88,6 @@ struct CustomTextStyle: ViewModifier {
             .shadow(color: .gray, radius: 2, x: 0, y: 2)
     }
 }
-
 
 extension View {
     func customTextStyle() -> some View {

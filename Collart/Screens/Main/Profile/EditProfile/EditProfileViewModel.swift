@@ -1,7 +1,13 @@
+//
+//  EditProfileViewModel.swift
+//  Collart
+//
+
 import Foundation
 import SwiftUI
 
 class EditProfileViewModel: ObservableObject {
+    @Environment(\.networkService) private var networkService: NetworkService
     @Published var name: String
     @Published var surname: String
     @Published var email: String
@@ -22,6 +28,10 @@ class EditProfileViewModel: ObservableObject {
     @Published var showToolSheet: Bool = false
     @Published var isLoading: Bool = false
     @Published var searchText = ""
+    
+    private var profileService: ProfileServiceDelegate {
+        networkService
+    }
     
     init(user: User) {
         self.name = user.name
@@ -62,11 +72,10 @@ class EditProfileViewModel: ObservableObject {
         }
     }
 
-    
     func saveChanges(completion: @escaping (Bool, Error?) -> Void) {
         isLoading = true
         
-        NetworkService.updateUserProfile(
+        profileService.updateUserProfile(
             email: email,
             name: name,
             surname: surname,

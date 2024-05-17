@@ -2,8 +2,6 @@
 //  FilterCell.swift
 //  Collart
 //
-//  Created by Nik Y on 04.02.2024.
-//
 
 import SwiftUI
 
@@ -29,13 +27,5 @@ struct FilterCell: View {
             )
             .cornerRadius(10)
             .foregroundColor(textColor)
-    }
-}
-
-struct FilterCell_Previews: PreviewProvider {
-    static var previews: some View {
-        FilterCell(isSelected: true, text: "Фотография")
-            .environmentObject(SettingsManager())
-            .preferredColorScheme(.dark)
     }
 }

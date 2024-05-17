@@ -2,8 +2,6 @@
 //  ActiveOrders.swift
 //  Collart
 //
-//  Created by Nik Y on 28.03.2024.
-//
 
 import SwiftUI
 
@@ -50,7 +48,3 @@ struct ActiveOrders: View {
     }
 }
 
-#Preview {
-    ActiveOrders(project: Order(id: "asd", projectImage: "https://example.com/projectImage1.png", projectName: "ZULI POSADA", roleRequired: "Графический дизайнер", requirement: "отрисовка логотипа по ТЗ", experience: "от 2 лет", tools: "Adobe Illustrator, Figma", authorAvatar: "https://example.com/authorAvatar1.png", authorName: "Jane Kudrinskaia", ownerID: "asf", description: ""))
-        .environmentObject(SettingsManager())
-}

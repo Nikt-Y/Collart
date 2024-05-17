@@ -2,8 +2,6 @@
 //  FiltersView.swift
 //  Collart
 //
-//  Created by Nik Y on 09.03.2024.
-//
 
 import SwiftUI
 
@@ -63,7 +61,6 @@ struct FiltersView: View {
                                 }
                         }
                     }
-                    // костылек, но LazyHStack не хочет нормально работать
                     .frame(height: settings.textSizeSettings.body + 30)
                 }
                 .animation(.default, value: viewModel.filteredSpecialtyFilters)
@@ -135,10 +132,3 @@ struct FiltersView: View {
         }
     }
 }
-
-//struct FiltersView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        FiltersView(viewModel: HomeViewModel(), isActive: true)
-//            .environmentObject(SettingsManager())
-//    }
-//}

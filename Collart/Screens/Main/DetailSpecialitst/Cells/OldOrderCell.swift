@@ -2,8 +2,6 @@
 //  OldOrderCell.swift
 //  Collart
 //
-//  Created by Nik Y on 26.03.2024.
-//
 
 import SwiftUI
 import CachedAsyncImage
@@ -110,8 +108,3 @@ struct OldOrderCell: View {
         }
     }
 }
-
-//#Preview {
-//    OldOrderCell(oldOrder: OldProject(contributors: [specialist1, specialist2], project: project1))
-//    .environmentObject(SettingsManager())
-//}

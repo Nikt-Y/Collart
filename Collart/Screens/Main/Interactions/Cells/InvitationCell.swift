@@ -2,21 +2,26 @@
 //  InvitationCell.swift
 //  Collart
 //
-//  Created by Nik Y on 28.03.2024.
-//
 
 import SwiftUI
 import CachedAsyncImage
 
+// MARK: - InteractionStatus
 enum InteractionStatus: String {
     case active = "active"
     case accepted = "accepted"
     case rejected = "rejected"
 }
 
+// MARK: - InvitationCell
 struct InvitationCell: View {
+    @Environment(\.networkService) private var networkService: NetworkService
     @EnvironmentObject var settingsManager: SettingsManager
     @State var isAvailable: Bool = true
+    
+    private var interactionsService: InteractionsServiceDelegate {
+        networkService
+    }
     
     var id: String
     var project: Order
@@ -25,14 +30,6 @@ struct InvitationCell: View {
     @State var acceptLoading = false
     
     var onRespond: () -> Void = {}
-//    let projectImage = Image(systemName: "photo.artframe")
-//    let projectName = "ZULI POSADA"
-//    let roleRequired = "Графический дизайнер"
-//    let requirement = "отрисовка логотипа по ТЗ"
-//    let experience = "от 2 лет"
-//    let tools = "Adobe Illustrator, Figma"
-//    let authorAvatar = Image(systemName: "photo.artframe")
-//    let authorName = "Jane Kudrinskaia"
     
     var body: some View {
         VStack {
@@ -55,10 +52,10 @@ struct InvitationCell: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: settingsManager.currentTheme.primaryColor))
                 }
             }
-                .frame(height: 150)
-                .clipped()
-                .clipShape(Rectangle())
-                .foregroundColor(.black)
+            .frame(height: 150)
+            .clipped()
+            .clipShape(Rectangle())
+            .foregroundColor(.black)
             
             VStack(alignment: .leading, spacing: 5) {
                 Text(project.projectName)
@@ -108,9 +105,9 @@ struct InvitationCell: View {
                                 .progressViewStyle(CircularProgressViewStyle(tint: settingsManager.currentTheme.primaryColor))
                         }
                     }
-                        .frame(width: 30, height: 30)
-                        .clipShape(Circle())
-                        .foregroundColor(.black)
+                    .frame(width: 30, height: 30)
+                    .clipShape(Circle())
+                    .foregroundColor(.black)
                     
                     Text(project.authorName)
                         .font(.system(size: settingsManager.textSizeSettings.body))
@@ -122,7 +119,7 @@ struct InvitationCell: View {
                     case .active:
                         Button {
                             rejectLoading = true
-                            NetworkService.Interactions.rejectInteraction(interactionId: id, getterID: UserManager.shared.user.id) { success, error in
+                            interactionsService.rejectInteraction(interactionId: id, getterID: UserManager.shared.user.id) { success, error in
                                 if success {
                                     status = .rejected
                                 }
@@ -142,7 +139,7 @@ struct InvitationCell: View {
                         
                         Button {
                             acceptLoading = true
-                            NetworkService.Interactions.acceptInteraction(interactionId: id, getterID: UserManager.shared.user.id) { success, error in
+                            interactionsService.acceptInteraction(interactionId: id, getterID: UserManager.shared.user.id) { success, error in
                                 if success {
                                     status = .accepted
                                 }
@@ -161,7 +158,7 @@ struct InvitationCell: View {
                         .padding(10)
                     case .accepted:
                         Button("Приглашение принято!") {
-//                            status = .active
+                            //                            status = .active
                         }
                         .bold()
                         .padding(.vertical, 12)
@@ -174,7 +171,7 @@ struct InvitationCell: View {
                         
                     case .rejected:
                         Button("Приглашение отклонено!") {
-//                            status = .active
+                            //                            status = .active
                         }
                         .bold()
                         .padding(.vertical, 12)
@@ -196,8 +193,3 @@ struct InvitationCell: View {
         .padding(.bottom, 2)
     }
 }
-
-//#Preview {
-//    InvitationCell(project: .init(id: "dsf", projectImage: "", projectName: "Project Name", roleRequired: "Role Required", requirement: "Что-то сделать", experience: "3 года", tools: "Фотошоп, Xcode", authorAvatar: "", authorName: "Никитос Кокос", ownerID: "sdv", description: ""))
-//        .environmentObject(SettingsManager())
-//}

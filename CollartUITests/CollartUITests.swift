@@ -2,8 +2,6 @@
 //  CollartUITests.swift
 //  CollartUITests
 //
-//  Created by Nik Y on 23.12.2023.
-//
 
 import XCTest
 

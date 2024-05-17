@@ -2,13 +2,11 @@
 //  CreateOrderViewModel.swift
 //  Collart
 //
-//  Created by Nik Y on 23.04.2024.
-//
 
-import Foundation
-import UIKit
+import SwiftUI
 
 class CreateOrderViewModel: ObservableObject {
+    @Environment(\.networkService) private var networkService: NetworkService
     @Published var name: String = ""
     @Published var requirement: String = ""
     @Published var description: String = ""
@@ -28,14 +26,18 @@ class CreateOrderViewModel: ObservableObject {
     @Published var isStartDatePicked: Bool = false
     @Published var isEndDatePicked: Bool = false
     
+    @Published var searchText: String = ""
+    
     var isSelectedSoftware: Bool {
         !tools.isEmpty
     }
     
-    @Published var searchText: String = ""
+    private var orderService: OrderServiceDelegate {
+        networkService
+    }
     
     func submitOrder(completion: @escaping () -> ()) {
-        let orderDetails = OrderForSend(
+        let orderDetails = NetworkService.OrderForSend(
             title: name,
             skill: activity,
             taskDescription: requirement,
@@ -46,13 +48,13 @@ class CreateOrderViewModel: ObservableObject {
             tools: tools
         )
 
-        let orderForm = OrderForm(
+        let orderForm = NetworkService.OrderForm(
             parameters: orderDetails,
             image: image,
             files: fileUrls.reduce(into: [String: URL]()) { result, url in result["file\(result.count + 1)"] = url }
         )
 
-        NetworkService.addOrder(orderForm: orderForm) { success, error in
+        orderService.addOrder(orderForm: orderForm) { success, error in
             if success {
                 print("Order added successfully.")
             } else if let error = error {

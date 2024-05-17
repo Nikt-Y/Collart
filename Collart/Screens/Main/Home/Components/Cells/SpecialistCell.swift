@@ -2,13 +2,10 @@
 //  SpecialistCell.swift
 //  Collart
 //
-//  Created by Nik Y on 17.02.2024.
-//
 
 import SwiftUI
 import CachedAsyncImage
 
-// TODO: Может стоит добавить описание к специалисту?
 struct SpecialistCell: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @State var isNotSelected: Bool = true
@@ -112,9 +109,6 @@ struct SpecialistCell: View {
                 
                 Button(isNotSelected ? "Пригласить" : "Приглашение отправлено") {
                     onRespond()
-//                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-//                        isNotSelected.toggle()
-//                    }
                 }
                 .buttonStyle(ConditionalButtonStyle(conditional: isNotSelected))
                 .padding()
@@ -126,10 +120,3 @@ struct SpecialistCell: View {
         .padding(.bottom, 2)
     }
 }
-//
-//struct SpecialistCell_Previews: PreviewProvider {
-//    static var previews: some View {
-//        SpecialistCell()
-//            .environmentObject(SettingsManager())
-//    }
-//}

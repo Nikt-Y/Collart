@@ -2,15 +2,14 @@
 //  DetailChatView.swift
 //  Collart
 //
-//  Created by Nik Y on 22.04.2024.
-//
 
 import SwiftUI
 import CachedAsyncImage
 
-struct ChatView: View {
+// MARK: - ChatView
+struct DetailChatView: View {
     @EnvironmentObject var settings: SettingsManager
-    @ObservedObject var viewModel: ChatViewModel
+    @ObservedObject var viewModel: DetailChatViewModel
     @Environment(\.dismiss) var dismiss
     
     var specId: String
@@ -22,7 +21,7 @@ struct ChatView: View {
         self.specId = specId
         self.specImage = specImage
         self.specName = specName
-        _viewModel = ObservedObject(wrappedValue: ChatViewModel(senderID: UserManager.shared.user.id, receiverID: specId))
+        _viewModel = ObservedObject(wrappedValue: DetailChatViewModel(senderID: UserManager.shared.user.id, receiverID: specId))
     }
     
     var body: some View {
@@ -30,7 +29,7 @@ struct ChatView: View {
             HStack(spacing: 15) {
                 Button(action: {
                     dismiss()
-                    isBackFromChat = true
+//                    isBackFromChat = true
                 }) {
                     HStack {
                         Image(systemName: "arrow.left")
@@ -86,10 +85,10 @@ struct ChatView: View {
                         }
                     }
                     .padding(.horizontal)
-                    .rotationEffect(.degrees(180)) // Переворачиваем VStack
+                    .rotationEffect(.degrees(180))
                 }
             }
-            .rotationEffect(.degrees(180)) // Переворачиваем ScrollView
+            .rotationEffect(.degrees(180))
             
             messageInputArea
         }
@@ -101,10 +100,6 @@ struct ChatView: View {
     
     var messageInputArea: some View {
         HStack {
-//            Button(action: attachFile) {
-//                Image(systemName: "paperclip").padding()
-//            }
-            
             TextField("Сообщение", text: $messageText)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .frame(maxHeight: 50)
@@ -124,12 +119,9 @@ struct ChatView: View {
             .padding()
         }
     }
-    
-    private func attachFile() {
-        // Заглушка для функции прикрепления файла
-    }
 }
 
+// MARK: - MessageView
 struct MessageView: View {
     @EnvironmentObject var settings: SettingsManager
     let message: Message
@@ -196,27 +188,3 @@ struct MessageView: View {
         }
     }
 }
-
-extension Date {
-    func formattedTime() -> String {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        formatter.locale = Locale(identifier: "ru_RU")
-        return formatter.string(from: self)
-    }
-    
-    func formattedDate() -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.locale = Locale(identifier: "ru_RU")
-        return formatter.string(from: self)
-    }
-}
-
-
-//struct ChatView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ChatView(spec: specialist1)
-//            .environmentObject(SettingsManager())
-//    }
-//}

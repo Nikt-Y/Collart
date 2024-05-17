@@ -2,17 +2,20 @@
 //  DetailChatViewModel.swift
 //  Collart
 //
-//  Created by Nik Y on 22.04.2024.
-//
 
 import Foundation
 import SwiftUI
 
-class ChatViewModel: ObservableObject {
+class DetailChatViewModel: ObservableObject {
+    @Environment(\.networkService) private var networkService: NetworkService
     @Published var messages = [Message]()
     
     var senderID: String
     var receiverID: String
+    
+    private var chatService: ChatServiceDelegate {
+        networkService
+    }
     
     init(senderID: String, receiverID: String) {
         self.senderID = senderID
@@ -21,7 +24,7 @@ class ChatViewModel: ObservableObject {
     }
     
     func loadMessages() {
-        NetworkService.Chat.fetchMessages(senderID: senderID, receiverID: receiverID, offset: nil, limit: nil) { [weak self] result in
+        chatService.fetchMessages(senderID: senderID, receiverID: receiverID, offset: nil, limit: nil) { [weak self] result in
             switch result {
             case .success(let fetchedMessages):
                 DispatchQueue.main.async {
@@ -42,7 +45,7 @@ class ChatViewModel: ObservableObject {
     func sendMessage(_ text: String, isSender: Bool) {
         let newMessage = Message(text: text, isSender: isSender, readStatus: false, timestamp: Date())
         
-        NetworkService.Chat.sendMessage(senderID: senderID, receiverID: receiverID, message: text, isRead: false, files: nil) { [weak self] success, error in
+        chatService.sendMessage(senderID: senderID, receiverID: receiverID, message: text, isRead: false, files: nil) { [weak self] success, error in
             if success {
                 DispatchQueue.main.async {
                     self?.messages.append(newMessage)
@@ -55,7 +58,7 @@ class ChatViewModel: ObservableObject {
     }
     
     func markMessageAsRead() {
-        NetworkService.Chat.markMessagesRead(senderID: receiverID , receiverID: senderID, offset: nil, limit: nil) { success, error in
+        chatService.markMessagesRead(senderID: receiverID , receiverID: senderID, offset: nil, limit: nil) { success, error in
             if success {
                
             } else {
@@ -73,5 +76,4 @@ class ChatViewModel: ObservableObject {
             MessageSection(date: key, messages: value.sorted(by: { $0.timestamp < $1.timestamp }))
         }.sorted(by: { $0.date < $1.date }) // Сортировка по возрастанию даты
     }
-
 }

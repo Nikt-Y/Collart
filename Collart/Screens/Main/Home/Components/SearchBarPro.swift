@@ -1,3 +1,8 @@
+//
+//  SearchBarPro.swift
+//  Collart
+//
+
 import SwiftUI
 
 struct SearchBarPro: View {
@@ -19,7 +24,7 @@ struct SearchBarPro: View {
                         .foregroundColor(settingsManager.currentTheme.textColorLightPrimary)
                         .padding(.leading, 10)
                 }
-                .zIndex(1) // Ensure the button is above the touch area
+                .zIndex(1)
                 
                 TextField("", text: $text, prompt: Text("Поиск").foregroundColor(settingsManager.currentTheme.textColorLightPrimary))
                     .focused($isTextFieldFocused)
@@ -61,7 +66,7 @@ struct SearchBarPro: View {
             }
             .background(settingsManager.currentTheme.searchColor)
             .clipShape(Capsule())
-            .contentShape(Rectangle()) // Extend tap area to the entire HStack
+            .contentShape(Rectangle())
             .onTapGesture {
                 if !isEditing {
                     withAnimation {

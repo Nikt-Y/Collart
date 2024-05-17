@@ -2,20 +2,20 @@
 //  CustomPicker.swift
 //  Collart
 //
-//  Created by Nik Y on 04.02.2024.
-//
 
 import SwiftUI
 
+// MARK: - Pickable protocol
 protocol Pickable {
     var displayValue: String { get }
     static var allCases: [Self] { get }
 }
 
+// MARK: - CustomPicker
 struct CustomPicker<T: Pickable & Hashable>: View where T: CaseIterable {
     @EnvironmentObject var settingsManager: SettingsManager
     @Binding var selectedTab: T
-    var expandsBeyondScreen: Bool = false // Новый флаг
+    var expandsBeyondScreen: Bool = false
     
     var body: some View {
         Group {
@@ -30,7 +30,6 @@ struct CustomPicker<T: Pickable & Hashable>: View where T: CaseIterable {
         .animation(.easeInOut(duration: 0.2), value: selectedTab)
     }
     
-    // Вынесенное содержимое пикера для удобства
     private var pickerContent: some View {
         HStack(spacing: 0) {
             ForEach(T.allCases, id: \.self) { tab in

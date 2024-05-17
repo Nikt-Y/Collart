@@ -1,3 +1,8 @@
+//
+//  SearchBarLight.swift
+//  Collart
+//
+
 import SwiftUI
 
 struct SearchBarLight: View {

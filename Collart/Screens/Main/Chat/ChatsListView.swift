@@ -2,8 +2,6 @@
 //  ChatsListView.swift
 //  Collart
 //
-//  Created by Nik Y on 17.03.2024.
-//
 
 import SwiftUI
 
@@ -24,7 +22,7 @@ struct ChatsListView: View {
                         LazyVStack(content: {
                             ForEach(viewModel.chats, id: \.id) { chat in
                                 NavigationLink {
-                                    ChatView(specId: chat.user.id, specImage: chat.user.specImage, specName: chat.user.name)
+                                    DetailChatView(specId: chat.user.id, specImage: chat.user.specImage, specName: chat.user.name)
                                 } label: {
                                     ChatListCellView(spec: chat.user, lastMessage: chat.lastMessage, status: chat.status, time: chat.timeLast, numOfUnread: chat.numOfUnread)
                                 }
@@ -44,13 +42,5 @@ struct ChatsListView: View {
                 isLoading = false
             }
         }
-    }
-}
-
-
-struct ChatsListView_Previews: PreviewProvider {
-    static var previews: some View {
-        ChatsListView()
-            .environmentObject(SettingsManager())
     }
 }

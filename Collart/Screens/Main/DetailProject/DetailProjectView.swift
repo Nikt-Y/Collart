@@ -2,8 +2,6 @@
 //  DetailProjectView.swift
 //  Collart
 //
-//  Created by Nik Y on 13.03.2024.
-//
 
 import SwiftUI
 import CachedAsyncImage
@@ -11,26 +9,24 @@ import CachedAsyncImage
 struct DetailProjectView: View {
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.dismiss) var dismiss
-    @State private var isFavorite: Bool = false
-    
-    let project: Order
+    @StateObject private var viewModel: DetailProjectViewModel
     
     init(project: Order) {
-        self.project = project
+        _viewModel = StateObject(wrappedValue: DetailProjectViewModel(project: project))
     }
     
     var body: some View {
         VStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(project.roleRequired)
+                    Text(viewModel.project.roleRequired)
                         .font(.system(size: settings.textSizeSettings.pageName))
                         .foregroundColor(settings.currentTheme.textColorPrimary)
                         .bold()
                         .padding(.horizontal)
                     
                     HStack {
-                        CachedAsyncImage(url: URL(string: !project.authorAvatar.isEmpty ? project.authorAvatar : "no url"), urlCache: .imageCache) { phase in
+                        CachedAsyncImage(url: URL(string: !viewModel.project.authorAvatar.isEmpty ? viewModel.project.authorAvatar : "no url"), urlCache: .imageCache) { phase in
                             switch phase {
                             case .success(let image):
                                 image
@@ -52,7 +48,7 @@ struct DetailProjectView: View {
                         .frame(width: 30, height: 30)
                         .clipShape(Circle())
                         
-                        Text(project.authorName)
+                        Text(viewModel.project.authorName)
                             .font(.system(size: settings.textSizeSettings.body))
                             .foregroundColor(settings.currentTheme.textColorPrimary)
                         
@@ -60,7 +56,7 @@ struct DetailProjectView: View {
                     }
                     .padding(.horizontal)
                     
-                    CachedAsyncImage(url: URL(string: !project.projectImage.isEmpty ? project.projectImage : "no url"), urlCache: .imageCache) { phase in
+                    CachedAsyncImage(url: URL(string: !viewModel.project.projectImage.isEmpty ? viewModel.project.projectImage : "no url"), urlCache: .imageCache) { phase in
                         switch phase {
                         case .success(let image):
                             image
@@ -82,20 +78,20 @@ struct DetailProjectView: View {
                     .padding(.bottom)
                     
                     Group {
-                        Text(project.projectName)
+                        Text(viewModel.project.projectName)
                             .font(.system(size: settings.textSizeSettings.subTitle))
                             .foregroundColor(settings.currentTheme.textColorPrimary)
                             .bold()
                         
-                        Text("Что требуется: \(project.requirement)")
+                        Text("Что требуется: \(viewModel.project.requirement)")
                             .font(.system(size: settings.textSizeSettings.body))
                             .foregroundColor(settings.currentTheme.textColorPrimary)
                         
-                        Text("Опыт работы: \(project.experience)")
+                        Text("Опыт работы: \(viewModel.project.experience)")
                             .font(.system(size: settings.textSizeSettings.body))
                             .foregroundColor(settings.currentTheme.textColorPrimary)
                         
-                        Text("Программы: \(project.tools)")
+                        Text("Программы: \(viewModel.project.tools)")
                             .font(.system(size: settings.textSizeSettings.body))
                             .foregroundColor(settings.currentTheme.textColorPrimary)
                         
@@ -103,21 +99,36 @@ struct DetailProjectView: View {
                             .font(.system(size: settings.textSizeSettings.body))
                             .foregroundColor(settings.currentTheme.textColorPrimary)
                         
-                        Text(project.description)
+                        Text(viewModel.project.description)
                             .font(.system(size: settings.textSizeSettings.body))
                             .foregroundColor(settings.currentTheme.textColorPrimary)
                     }
                     .padding(.horizontal)
+                    
+                    if !viewModel.project.files.isEmpty {
+                        HStack {
+                            Image("file")
+                                .resizable()
+                                .foregroundColor(settings.currentTheme.primaryColor)
+                                .frame(width: 30, height: 30)
+                            
+                            Text("Дополнительные файлы")
+                                .font(.system(size: settings.textSizeSettings.body))
+                                .foregroundColor(settings.currentTheme.primaryColor)
+                                .underline()
+                        }
+                        .padding(.horizontal)
+                    }
                 }
             }
             
-            if project.ownerID != UserManager.shared.user.id {
+            if viewModel.project.ownerID != UserManager.shared.user.id {
                 HStack {
                     NavigationLink {
-                        ChatView(
-                            specId: project.ownerID,
-                            specImage: project.authorAvatar,
-                            specName: project.authorName
+                        DetailChatView(
+                            specId: viewModel.project.ownerID,
+                            specImage: viewModel.project.authorAvatar,
+                            specName: viewModel.project.authorName
                         )
                     } label: {
                         Text("Написать")
@@ -137,28 +148,30 @@ struct DetailProjectView: View {
         .background(settings.currentTheme.backgroundColor)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                            Button(action: {
-                                dismiss()
-                            }) {
-                                Image(systemName: "arrow.left")
-                                    .foregroundColor(settings.currentTheme.textColorPrimary)
-                                    .bold()
-                            }
-                        }
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "arrow.left")
+                        .foregroundColor(settings.currentTheme.textColorPrimary)
+                        .bold()
+                }
+            }
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                if project.ownerID != UserManager.shared.user.id {
+                if viewModel.project.ownerID != UserManager.shared.user.id {
                     Button(action: {
-                        toggleFavoriteStatus()
+                        viewModel.toggleFavoriteStatus()
                     }) {
-                        Image(systemName: isFavorite ? "heart.fill" : "heart")
+                        Image(systemName: viewModel.isFavorite ? "heart.fill" : "heart")
                             .resizable()
                             .frame(width: 20, height: 20)
-                            .foregroundColor(isFavorite ? .red : settings.currentTheme.textColorPrimary)
+                            .foregroundColor(viewModel.isFavorite ? .red : settings.currentTheme.textColorPrimary)
                     }
                 } else {
                     Button(action: {
-                        deleteOrder()
+                        viewModel.deleteOrder {
+                            dismiss()
+                        }
                     }) {
                         Image(systemName: "x.circle.fill")
                             .resizable()
@@ -170,45 +183,7 @@ struct DetailProjectView: View {
         }
         .navigationBarBackButtonHidden()
         .onAppear {
-            let test = UserManager.shared.user.liked
-            isFavorite = UserManager.shared.user.liked.contains { $0.id == project.id }
-        }
-    }
-    
-    private func toggleFavoriteStatus() {
-        if isFavorite {
-            NetworkService.removeOrderFromFavorites(orderId: project.id) { success, error in
-                if success {
-                    UserManager.shared.user.liked.removeAll { $0.id == project.id }
-                    isFavorite = false
-                }
-            }
-        } else {
-            NetworkService.addOrderToFavorites(orderId: project.id) { success, error in
-                if success {
-                    DispatchQueue.main.async {
-                        UserManager.shared.user.liked.append(project)
-                        isFavorite = true
-                    }
-                }
-            }
-        }
-    }
-    
-    private func deleteOrder() {
-        NetworkService.deleteOrder(orderId: project.id) { success, error in
-            DispatchQueue.main.async {
-                ToastManager.shared.show(message: "Проект успешно удален")
-                dismiss()
-            }
+            viewModel.checkIfFavorite()
         }
     }
 }
-
-
-//struct DetailProjectView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        DetailProjectView(project: Project(projectImage:  "https://example.com/projectImage1.png", projectName: "ZULI POSADA", roleRequired: "Графический дизайнер", requirement: "отрисовка логотипа по ТЗ", experience: "от 2 лет", tools: "Adobe Illustrator, Figma", authorAvatar: "https://example.com/authorAvatar1.png", authorName: "Jane Kudrinskaia", description: "lorem snk snd lkm sdf fnghfdh jngfdh jdfng kdjfng kjndf kgdkfjn kjngdf kjngdf kjngfd kjndfg kjndgf kjndfg kjngdf kjdnf f!"))
-//            .environmentObject(SettingsManager())
-//    }
-//}

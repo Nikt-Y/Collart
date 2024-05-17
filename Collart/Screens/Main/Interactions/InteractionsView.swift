@@ -2,11 +2,10 @@
 //  InteractionsView.swift
 //  Collart
 //
-//  Created by Nik Y on 17.03.2024.
-//
 
 import SwiftUI
 
+// MARK: - InteractionTab
 enum InteractionTab: Pickable, CaseIterable {
     case responses, invitations
     
@@ -18,7 +17,7 @@ enum InteractionTab: Pickable, CaseIterable {
     }
 }
 
-
+// MARK: - InteractionFilter
 enum InteractionFilter: String, CaseIterable {
     case active = "Активные"
     case completed = "Завершенные"
@@ -31,6 +30,7 @@ enum InteractionFilter: String, CaseIterable {
     }
 }
 
+// MARK: - InteractionsView
 struct InteractionsView: View {
     @EnvironmentObject private var settings: SettingsManager
     @StateObject private var viewModel = InteractionsViewModel()
@@ -91,13 +91,17 @@ struct InteractionsView: View {
                 .overlay(Group {
                     switch selectedTab {
                     case .responses:
-                        if viewModel.responses.isEmpty {
+                        if viewModel.responses.filter({ response in
+                            filterInteraction(response.status)
+                        }).isEmpty {
                             Text("У вас нет откликов")
                                 .foregroundColor(settings.currentTheme.textColorPrimary)
                         }
                         
                     case .invitations:
-                        if viewModel.invites.isEmpty {
+                        if viewModel.invites.filter({ invite in
+                            filterInteraction(invite.status)
+                        }).isEmpty {
                             Text("У вас нет приглашений")
                                 .foregroundColor(settings.currentTheme.textColorPrimary)
                         }
@@ -119,12 +123,5 @@ struct InteractionsView: View {
         case .completed:
             return status == .accepted || status == .rejected
         }
-    }
-}
-
-struct InteractionsView_Previews: PreviewProvider {
-    static var previews: some View {
-        InteractionsView()
-            .environmentObject(SettingsManager())
     }
 }

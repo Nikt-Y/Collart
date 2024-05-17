@@ -2,12 +2,11 @@
 //  ProfileView.swift
 //  Collart
 //
-//  Created by Nik Y on 17.03.2024.
-//
 
 import SwiftUI
 import CachedAsyncImage
 
+// MARK: - ProfileTab
 enum ProfileTab: Pickable, CaseIterable {
     case active, portfolio, collaborations, liked
     
@@ -21,21 +20,22 @@ enum ProfileTab: Pickable, CaseIterable {
     }
 }
 
+// MARK: - UserLoadingStatus
 enum UserLoadingStatus: Int {
     case loading = 0
     case success = 1
     case error = 2
 }
 
-var isBackFromCreate = false
+import SwiftUI
 
+// MARK: - ProfileView
 struct ProfileView: View {
     @StateObject var viewModel: ProfileViewModel = ProfileViewModel.shared
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.dismiss) var dismiss
     
     @State private var selectedTab: ProfileTab = .active
-    @State var isLoading = false
     @State var userLoading = UserLoadingStatus.loading
     let columns = [
         GridItem(.flexible(minimum: 0, maximum: .infinity)),
@@ -137,8 +137,7 @@ struct ProfileView: View {
                         ScrollView {
                             switch selectedTab {
                             case .portfolio:
-                                let test = viewModel.specProfile.portfolioProjects.isEmpty
-                                if isLoading && viewModel.specProfile.portfolioProjects.isEmpty {
+                                if viewModel.isLoading && viewModel.specProfile.portfolioProjects.isEmpty {
                                     VStack {
                                         HStack {
                                             Spacer()
@@ -153,7 +152,7 @@ struct ProfileView: View {
                                 } else {
                                     LazyVGrid(columns: columns) {
                                         ForEach(viewModel.specProfile.portfolioProjects, id: \.id) { item in
-                                            PortfolioCell(imageName: item.projectImage, title: item.projectName)
+                                            PortfolioCell(project: item)
                                                 .padding(5)
                                         }
                                     }
@@ -166,7 +165,7 @@ struct ProfileView: View {
                                     }
                                 }
                             case .collaborations:
-                                if isLoading && viewModel.specProfile.oldProjects.isEmpty {
+                                if viewModel.isLoading && viewModel.specProfile.oldProjects.isEmpty {
                                     VStack {
                                         HStack {
                                             Spacer()
@@ -193,7 +192,7 @@ struct ProfileView: View {
                                     }
                                 }
                             case .active:
-                                if isLoading && viewModel.specProfile.activeProjects.isEmpty {
+                                if viewModel.isLoading && viewModel.specProfile.activeProjects.isEmpty {
                                     VStack {
                                         HStack {
                                             Spacer()
@@ -219,7 +218,7 @@ struct ProfileView: View {
                                     }
                                 }
                             case .liked:
-                                if isLoading && viewModel.specProfile.liked.isEmpty {
+                                if viewModel.isLoading && viewModel.specProfile.liked.isEmpty {
                                     VStack {
                                         HStack {
                                             Spacer()
@@ -295,117 +294,24 @@ struct ProfileView: View {
                     .padding(.bottom, 5)
                     .onTapGesture {
                         print("open settings")
-                        // open settings
                     }
                 }
 
             }
         }
-        .onAppear {            
+        .onAppear {
             userLoading = .loading
             viewModel.fetchUser { success in
                 if success {
                     userLoading = .success
-                    loadData(for: selectedTab)
+                    viewModel.loadData(for: selectedTab)
                 } else {
                     userLoading = .error
                 }
             }
         }
         .onChange(of: selectedTab) { newTab in
-            loadData(for: newTab)
+            viewModel.loadData(for: newTab)
         }
-    }
-    
-    private func loadData(for tab: ProfileTab) {
-            isLoading = true
-            switch tab {
-            case .portfolio:
-                NetworkService.fetchPortfolio(userId: viewModel.specProfile.id) { result in
-                    switch result {
-                    case .success(let portfolioProjects):
-                        viewModel.specProfile.portfolioProjects = portfolioProjects.map({ proj in
-                            PortfolioProject(projectImage: proj.image, projectName: proj.name, files: proj.files)
-                        })
-                    case .failure(let error):
-                        print("Error fetching portfolio: \(error.localizedDescription)")
-                    }
-                    isLoading = false
-                }
-            case .collaborations:
-                NetworkService.fetchCompletedCollaborations(userId: viewModel.specProfile.id) { result in
-                    switch result {
-                    case .success(let projects):
-                        NetworkService.Interactions.fetchUserInteractions(userId: viewModel.specProfile.id) { result in
-                            switch result {
-                            case .success(let interactions):
-                                viewModel.specProfile.oldProjects = []
-                                for proj in projects {
-                                    var contributors: [Specialist] = []
-                                    for interaction in interactions {
-                                        if interaction.order.order.id == proj.order.id {
-                                            if !contributors.contains(where: { spec in
-                                                spec.id == interaction.getter.user.id
-                                            }) {
-                                                // Добавить геттера в контрибуторы
-                                                contributors.append(Specialist.transformToSpecialist(from: interaction.getter))
-                                            }
-                                            
-                                            if !contributors.contains(where: { spec in
-                                                spec.id == interaction.sender.user.id
-                                            }) {
-                                                // Добавить sender в контрибуторы
-                                                contributors.append(Specialist.transformToSpecialist(from: interaction.sender))
-                                            }
-                                        }
-                                    }
-                                    viewModel.specProfile.oldProjects.append(OldProject(contributors: contributors, project: Order.transformToOrder(from: proj)))
-                                }
-                            case .failure(let failure):
-                                break
-                            }
-                            isLoading = false
-                        }
-                    case .failure(let error):
-                        print("Error fetching portfolio: \(error.localizedDescription)")
-                        isLoading = false
-                    }
-                }
-            case .active:
-                NetworkService.fetchUserOrders(userId: viewModel.specProfile.id) { result in
-                    switch result {
-                    case .success(let projects):
-                        let projs = projects.map({ proj in
-                            Order.transformToOrder(from: proj)
-                        })
-                        viewModel.specProfile.activeProjects = projs
-                        UserManager.shared.user.activeProjects = projs
-                    case .failure(let error):
-                        print("Error fetching portfolio: \(error.localizedDescription)")
-                    }
-                    isLoading = false
-                }
-            case .liked:
-                NetworkService.fetchFavorites(userId: viewModel.specProfile.id) { result in
-                    switch result {
-                    case .success(let projects):
-                        let projs = projects.map({ proj in
-                            Order.transformToOrder(from: proj)
-                        })
-                        viewModel.specProfile.liked = projs
-                        UserManager.shared.user.liked = projs
-                    case .failure(let error):
-                        print("Error fetching portfolio: \(error.localizedDescription)")
-                    }
-                    isLoading = false
-                }
-            }
-        }
-}
-
-struct ProfileView_Previews: PreviewProvider {
-    static var previews: some View {
-        ProfileView()
-            .environmentObject(SettingsManager())
     }
 }

@@ -1,6 +1,12 @@
+//
+//  DetailSpecialistView.swift
+//  Collart
+//
+
 import SwiftUI
 import CachedAsyncImage
 
+// MARK: - DetailSpecTab
 enum DetailSpecTab: Pickable, CaseIterable {
     case portfolio, collaborations, active
     
@@ -13,6 +19,7 @@ enum DetailSpecTab: Pickable, CaseIterable {
     }
 }
 
+// MARK: - DetailSpecialistView
 struct DetailSpecialistView: View {
     @StateObject var viewModel: DetailSpecialistViewModel
     @EnvironmentObject var settings: SettingsManager
@@ -20,8 +27,6 @@ struct DetailSpecialistView: View {
     
     var isProfile: Bool = false
     @State private var selectedTab: DetailSpecTab = .portfolio
-    @State var loadingInvite = false
-    @State var isLoading = false
     let columns = [
         GridItem(.flexible(minimum: 0, maximum: .infinity)),
         GridItem(.flexible(minimum: 0, maximum: .infinity))
@@ -83,7 +88,6 @@ struct DetailSpecialistView: View {
             }
             .padding(.bottom)
             
-            
             VStack(spacing: 0) {
                 Text(viewModel.specProfile.name)
                     .font(.system(size: settings.textSizeSettings.pageName))
@@ -110,7 +114,7 @@ struct DetailSpecialistView: View {
                     HStack {
                         NavigationLink {
                             let name = "\(viewModel.specProfile.name) \(viewModel.specProfile.surname)".trimmingCharacters(in: [" "])
-                            ChatView(
+                            DetailChatView(
                                 specId: viewModel.specProfile.id,
                                 specImage: viewModel.specProfile.avatar,
                                 specName: name
@@ -133,7 +137,7 @@ struct DetailSpecialistView: View {
                 ScrollView {
                     switch selectedTab {
                     case .portfolio:
-                        if isLoading && viewModel.specProfile.portfolioProjects.isEmpty {
+                        if viewModel.isLoading && viewModel.specProfile.portfolioProjects.isEmpty {
                             VStack {
                                 HStack {
                                     Spacer()
@@ -147,7 +151,7 @@ struct DetailSpecialistView: View {
                         } else {
                             LazyVGrid(columns: columns) {
                                 ForEach(viewModel.specProfile.portfolioProjects, id: \.id) { item in
-                                    PortfolioCell(imageName: item.projectImage, title: item.projectName)
+                                    PortfolioCell(project: item)
                                         .padding(5)
                                 }
                             }
@@ -160,7 +164,7 @@ struct DetailSpecialistView: View {
                             }
                         }
                     case .collaborations:
-                        if isLoading && viewModel.specProfile.oldProjects.isEmpty {
+                        if viewModel.isLoading && viewModel.specProfile.oldProjects.isEmpty {
                             VStack {
                                 HStack {
                                     Spacer()
@@ -186,7 +190,7 @@ struct DetailSpecialistView: View {
                             }
                         }
                     case .active:
-                        if isLoading && viewModel.specProfile.activeProjects.isEmpty {
+                        if viewModel.isLoading && viewModel.specProfile.activeProjects.isEmpty {
                             VStack {
                                 HStack {
                                     Spacer()
@@ -215,7 +219,7 @@ struct DetailSpecialistView: View {
                 }
                 .animation(.easeInOut, value: selectedTab)
                 .onChange(of: selectedTab) { newTab in
-                    loadData(for: newTab)
+                    viewModel.loadData(for: newTab)
                 }
             }
         }
@@ -290,19 +294,10 @@ struct DetailSpecialistView: View {
                     }
                 })
                 
-                
                 Button {
-                    loadingInvite = true
-                    for selectedProjectsForInvite in viewModel.selectedProjectsForInvite {
-                        NetworkService.Interactions.sendInvite(orderID: selectedProjectsForInvite.id, getterID: viewModel.specProfile.id) { success, error in
-                            loadingInvite = false
-                            viewModel.showInviteSelect.toggle()
-                            viewModel.selectedProjectsForInvite = []
-                        }
-                    }
-                    
+                    viewModel.sendInvites()
                 } label: {
-                    if loadingInvite {
+                    if viewModel.loadingInvite {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     } else {
@@ -330,67 +325,7 @@ struct DetailSpecialistView: View {
             }
         }
         .onAppear {
-            loadData(for: selectedTab)
-        }
-    }
-    
-    private func loadData(for tab: DetailSpecTab) {
-        isLoading = true
-        switch tab {
-        case .portfolio:
-            NetworkService.fetchPortfolio(userId: viewModel.specProfile.id) { result in
-                switch result {
-                case .success(let portfolioProjects):
-                    viewModel.specProfile.portfolioProjects = portfolioProjects.map { proj in
-                        PortfolioProject(projectImage: proj.image, projectName: proj.name, files: proj.files)
-                    }
-                case .failure(let error):
-                    print("Error fetching portfolio: \(error.localizedDescription)")
-                }
-                isLoading = false
-            }
-        case .collaborations:
-            NetworkService.fetchCompletedCollaborations(userId: viewModel.specProfile.id) { result in
-                switch result {
-                case .success(let projects):
-                    NetworkService.Interactions.fetchUserInteractions(userId: viewModel.specProfile.id) { result in
-                        switch result {
-                        case .success(let interactions):
-                            viewModel.specProfile.oldProjects = []
-                            for proj in projects {
-                                var contributors: [Specialist] = []
-                                for interaction in interactions {
-                                    if interaction.order.order.id == proj.order.id {
-                                        if !contributors.contains(where: { $0.id == interaction.getter.user.id }) {
-                                            contributors.append(Specialist.transformToSpecialist(from: interaction.getter))
-                                        }
-                                        if !contributors.contains(where: { $0.id == interaction.sender.user.id }) {
-                                            contributors.append(Specialist.transformToSpecialist(from: interaction.sender))
-                                        }
-                                    }
-                                }
-                                viewModel.specProfile.oldProjects.append(OldProject(contributors: contributors, project: Order.transformToOrder(from: proj)))
-                            }
-                        case .failure(let failure):
-                            break
-                        }
-                        isLoading = false
-                    }
-                case .failure(let error):
-                    print("Error fetching portfolio: \(error.localizedDescription)")
-                    isLoading = false
-                }
-            }
-        case .active:
-            NetworkService.fetchUserOrders(userId: viewModel.specProfile.id) { result in
-                switch result {
-                case .success(let projects):
-                    viewModel.specProfile.activeProjects = projects.map { Order.transformToOrder(from: $0) }
-                case .failure(let error):
-                    print("Error fetching portfolio: \(error.localizedDescription)")
-                }
-                isLoading = false
-            }
+            viewModel.loadData(for: selectedTab)
         }
     }
 }

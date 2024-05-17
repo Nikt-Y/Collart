@@ -2,11 +2,11 @@
 //  SettingsViewModel.swift
 //  Collart
 //
-//  Created by Nik Y on 04.05.2024.
-//
 
 import Foundation
 
+// TODO: Планы на будущее - реализовать настройку темы, размер шрифтов и т.д.
+// На данный момент редактирование профиля находится в папке EditProfile
 class SettingsViewModel: ObservableObject {
     
 }

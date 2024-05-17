@@ -2,18 +2,17 @@
 //  Validations.swift
 //  Collart
 //
-//  Created by Nik Y on 23.12.2023.
-//
 
 import Foundation
 
+// MARK: Validator
 enum Validator {
     static func validateName(_ email: String) -> Bool {
-        return true // TODO: 
+        return true
     }
     
     static func validateLogin(_ email: String) -> Bool {
-        return true // TODO: 
+        return true
     }
     
     static func validateEmail(_ email: String) -> Bool {

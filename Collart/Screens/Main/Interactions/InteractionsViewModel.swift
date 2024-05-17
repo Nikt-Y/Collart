@@ -2,17 +2,20 @@
 //  InteractionsViewModel.swift
 //  Collart
 //
-//  Created by Nik Y on 11.05.2024.
-//
 
-import Foundation
+import SwiftUI
 
 class InteractionsViewModel: ObservableObject {
+    @Environment(\.networkService) private var networkService: NetworkService
     @Published var responses: [Response] = []
     @Published var invites: [Invite] = []
     
+    private var interactionsService: InteractionsServiceDelegate {
+            networkService
+        }
+    
     func fetchInteractions(completion: @escaping () -> ()) {
-        NetworkService.Interactions.fetchUserInteractions(userId: UserManager.shared.user.id) { result in
+        interactionsService.fetchUserInteractions(userId: UserManager.shared.user.id) { result in
             switch result {
             case .success(let interactions):
                 self.responses = []
@@ -38,17 +41,4 @@ class InteractionsViewModel: ObservableObject {
             completion()
         }
     }
-}
-
-struct Response {
-    var id: String
-    var responser: User
-    var project: Order
-    var status: InteractionStatus
-}
-
-struct Invite {
-    var id: String
-    var project: Order
-    var status: InteractionStatus
 }

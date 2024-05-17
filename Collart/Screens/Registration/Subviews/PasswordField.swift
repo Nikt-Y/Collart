@@ -2,8 +2,6 @@
 //  PasswordField.swift
 //  Collart
 //
-//  Created by Nik Y on 28.01.2024.
-//
 
 import SwiftUI
 

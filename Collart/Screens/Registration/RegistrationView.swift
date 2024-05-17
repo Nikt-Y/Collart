@@ -2,8 +2,6 @@
 //  RegistrationView.swift
 //  Collart
 //
-//  Created by Nik Y on 02.01.2024.
-//
 
 import SwiftUI
 

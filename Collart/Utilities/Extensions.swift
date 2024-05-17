@@ -2,11 +2,10 @@
 //  Extensions.swift
 //  Collart
 //
-//  Created by Nik Y on 28.12.2023.
-//
 
 import SwiftUI
 
+// MARK: - FadeInScale
 extension AnyTransition {
     static var fadeInAndScale: AnyTransition {
         let insertion = AnyTransition.opacity.combined(with: .scale)
@@ -15,6 +14,7 @@ extension AnyTransition {
     }
 }
 
+// MARK: - Navigation Pop Gesture
 extension UINavigationController: UIGestureRecognizerDelegate {
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -26,13 +26,14 @@ extension UINavigationController: UIGestureRecognizerDelegate {
     }
 }
 
+// MARK: - Hide Keyboard
 extension View {
     func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 
-
+// MARK: - Toast
 class ToastManager: ObservableObject {
     static let shared = ToastManager()
     
@@ -71,5 +72,22 @@ struct ToastView: View {
                     .animation(.easeInOut, value: toastManager.isShowing)
             }
         }
+    }
+}
+
+// MARK: - Date format
+extension Date {
+    func formattedTime() -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter.string(from: self)
+    }
+    
+    func formattedDate() -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter.string(from: self)
     }
 }

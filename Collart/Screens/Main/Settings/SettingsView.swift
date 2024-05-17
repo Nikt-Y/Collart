@@ -2,11 +2,11 @@
 //  SettingsView.swift
 //  Collart
 //
-//  Created by Nik Y on 04.05.2024.
-//
 
 import SwiftUI
 
+// TODO: Планы на будущее - реализовать настройку темы, размер шрифтов и т.д.
+// На данный момент редактирование профиля находится в папке EditProfile
 struct SettingsView: View {
     var body: some View {
         Text("SettingsView")

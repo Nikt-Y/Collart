@@ -2,8 +2,6 @@
 //  URLCache+imageCache.swift
 //  Collart
 //
-//  Created by Nik Y on 09.05.2024.
-//
 
 import Foundation
 

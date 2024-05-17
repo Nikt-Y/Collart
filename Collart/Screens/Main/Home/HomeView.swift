@@ -2,12 +2,11 @@
 //  HomeView.swift
 //  Collart
 //
-//  Created by Nik Y on 02.01.2024.
-//
 
 import SwiftUI
 import CachedAsyncImage
 
+// MARK: - Tab
 enum Tab: Pickable, CaseIterable {
     case projects, specialists
     
@@ -19,6 +18,7 @@ enum Tab: Pickable, CaseIterable {
     }
 }
 
+// MARK: - HomeView
 struct HomeView: View {
     @EnvironmentObject private var settings: SettingsManager
     @StateObject private var viewModel = HomeViewModel()
@@ -39,15 +39,8 @@ struct HomeView: View {
                     .progressViewStyle(CircularProgressViewStyle(tint: settings.currentTheme.primaryColor))
                     .scaleEffect(3)
                     .onAppear {
-                        NetworkService.fetchSkills { result in
-                            switch result {
-                            case .success(let skills):
-                                viewModel.specialtyFilters = skills.map({ FilterOption(text: $0.text)})
-                                isFiltersFetched = true
-                            case .failure(let failure):
-                                print("skills fetch error")
-                                isFiltersFetched = true
-                            }
+                        viewModel.fetchSkills { success in
+                            isFiltersFetched = success
                         }
                     }
             } else {
@@ -69,7 +62,6 @@ struct HomeView: View {
                                     }
                             }
                         }
-                        // костылек, но LazyHStack не хочет нормально работать
                         .frame(height: settings.textSizeSettings.body + 30)
                     }
                     .animation(.default, value: viewModel.specialtyFilters)
@@ -77,12 +69,7 @@ struct HomeView: View {
                     RefreshableScrollView(
                         loadingViewBackgroundColor: settings.currentTheme.backgroundColor,
                         onRefresh: { done in
-                            switch selectedTab {
-                            case .projects:
-                                viewModel.fetchProjects(completion: done)
-                            case .specialists:
-                                viewModel.fetchSpecialists(completion: done)
-                            }
+                            viewModel.fetchData(for: selectedTab, completion: done)
                         },
                         progress: { state in
                             if state == .waiting {
@@ -101,21 +88,18 @@ struct HomeView: View {
                                             .progressViewStyle(CircularProgressViewStyle(tint: settings.currentTheme.primaryColor))
                                             .scaleEffect(3)
                                     } else {
-                                        
-                                        
-                                            if viewModel.filteredOrders.isEmpty {
-                                                Text("Проекты не найдены")
-                                                    .padding()
-                                                    .padding(.top, 50)
-                                            } else {
-                                                ForEach(viewModel.filteredOrders) { project in
-                                                    ProjectCell(project: project, onRespond: viewModel.handleResponse)
-                                                        .listRowSeparator(.hidden)
-                                                        .transition(.opacity)
-                                                }
-                                                .listRowBackground(Color.clear)
+                                        if viewModel.filteredOrders.isEmpty {
+                                            Text("Проекты не найдены")
+                                                .padding()
+                                                .padding(.top, 50)
+                                        } else {
+                                            ForEach(viewModel.filteredOrders) { project in
+                                                ProjectCell(project: project, onRespond: viewModel.handleResponse)
+                                                    .listRowSeparator(.hidden)
+                                                    .transition(.opacity)
                                             }
-                                        
+                                            .listRowBackground(Color.clear)
+                                        }
                                     }
                                 } else {
                                     if viewModel.isLoading {
@@ -124,27 +108,24 @@ struct HomeView: View {
                                             .progressViewStyle(CircularProgressViewStyle(tint: settings.currentTheme.primaryColor))
                                             .scaleEffect(3)
                                     } else {
-                                        
-                                        
-                                            if viewModel.filteredSpecs.isEmpty {
-                                                Text("Специалисты не найдены")
-                                                    .padding()
-                                                    .padding(.top, 50)
-                                            } else {
-                                                ForEach(viewModel.filteredSpecs) { specialist in
-                                                    SpecialistCell(specialist: specialist, onRespond: {
-                                                        viewModel.handleInvite(spec: specialist)
-                                                    })
-                                                    .listRowSeparator(.hidden)
-                                                    .transition(.opacity)
-                                                    .onTapGesture {
-                                                        selectedSpecialists = specialist
-                                                        isShowingDetailSpecialist = true
-                                                    }
+                                        if viewModel.filteredSpecs.isEmpty {
+                                            Text("Специалисты не найдены")
+                                                .padding()
+                                                .padding(.top, 50)
+                                        } else {
+                                            ForEach(viewModel.filteredSpecs) { specialist in
+                                                SpecialistCell(specialist: specialist, onRespond: {
+                                                    viewModel.handleInvite(spec: specialist)
+                                                })
+                                                .listRowSeparator(.hidden)
+                                                .transition(.opacity)
+                                                .onTapGesture {
+                                                    selectedSpecialists = specialist
+                                                    isShowingDetailSpecialist = true
                                                 }
-                                                .listRowBackground(Color.clear)
                                             }
-                                        
+                                            .listRowBackground(Color.clear)
+                                        }
                                     }
                                 }
                             }
@@ -163,7 +144,8 @@ struct HomeView: View {
                         }
                         .onAppear {
                             viewModel.isLoading = true
-                            viewModel.fetchProjects {
+                            viewModel.fetchData(for: .projects) {
+//                                viewModel.isLoading = false
                             }
                         }
                 }
@@ -190,110 +172,9 @@ struct HomeView: View {
                     viewModel.applyFilters()
                 })
                 .sheet(isPresented: $viewModel.showInviteSelect, content: {
-                    VStack {
-                        Text("Выберите проект для приглашения")
-                            .multilineTextAlignment(.center)
-                            .font(.system(size: settings.textSizeSettings.pageName))
-                            .foregroundColor(settings.currentTheme.textColorPrimary)
-                            .bold()
-                            .padding(.horizontal, 40)
-                            .padding(.vertical, 20)
-                        
-                        List(UserManager.shared.user.activeProjects) { item in
-                            GeometryReader(content: { geometry in
-                                HStack {
-                                    CachedAsyncImage(url: URL(string: !item.projectImage.isEmpty ? item.projectImage : "no url"), urlCache: .imageCache) { phase in
-                                        switch phase {
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .aspectRatio(16/9, contentMode: .fill)
-                                        case .empty:
-                                            ProgressView()
-                                                .progressViewStyle(CircularProgressViewStyle(tint: settings.currentTheme.primaryColor))
-                                        case .failure(_):
-                                            Image(systemName: "photo.artframe")
-                                                .resizable()
-                                                .aspectRatio(16/9, contentMode: .fill)
-                                                .foregroundColor(settings.currentTheme.textColorPrimary)
-                                        @unknown default:
-                                            ProgressView()
-                                                .progressViewStyle(CircularProgressViewStyle(tint: settings.currentTheme.primaryColor))
-                                        }
-                                    }
-                                        .frame(width: geometry.size.width/6)
-                                        .foregroundColor(settings.currentTheme.textColorPrimary)
-                                        .clipShape(RoundedRectangle(cornerRadius: 5))
-                                        .background()
-                                        .shadow(radius: 1)
-                                    VStack {
-                                        Text(item.projectName)
-                                            .font(.system(size: settings.textSizeSettings.body))
-                                            .foregroundColor(settings.currentTheme.textColorPrimary)
-                                        
-                                    }
-                                    Spacer()
-                                    
-                                    if viewModel.selectedProjectsForInvite.contains(where: { $0.id == item.id }) {
-                                        Image(systemName: "checkmark")
-                                            .foregroundColor(settings.currentTheme.textColorPrimary)
-                                    }
-                                }
-                                .padding(.horizontal)
-                                .padding(.bottom, 10)
-                                .background()
-                                .onTapGesture {
-                                    if viewModel.selectedProjectsForInvite.contains(where: { $0.id == item.id }) {
-                                        viewModel.selectedProjectsForInvite.removeAll { $0.id == item.id }
-                                    } else {
-                                        viewModel.selectedProjectsForInvite.append(item)
-                                    }
-                                }
-                            })
-                        }
-                        .listStyle(.plain)
-                        .overlay(Group {
-                            if UserManager.shared.user.activeProjects.isEmpty {
-                                Text("У вас нет проектов для приглашения")
-                                    .foregroundColor(settings.currentTheme.textColorPrimary)
-                            }
-                        })
-                        
-                        
-                        Button {
-                            isSendingInvites = true
-                            for selectedProjectsForInvite in viewModel.selectedProjectsForInvite {
-                                NetworkService.Interactions.sendInvite(orderID: selectedProjectsForInvite.id, getterID: viewModel.selectedSpecialist?.id ?? "") { success, error in
-                                    isSendingInvites = false
-                                    viewModel.showInviteSelect.toggle()
-                                    viewModel.selectedProjectsForInvite = []
-                                }
-                            }
-                            
-                        } label: {
-                            if isSendingInvites {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            } else {
-                                Text("Пригласить")
-                            }
-                        }
-                        .buttonStyle(ConditionalButtonStyle(conditional: !viewModel.selectedProjectsForInvite.isEmpty))
-                        .disabled(viewModel.selectedProjectsForInvite.isEmpty)
-                        .padding(.horizontal)
-                        //                    Button("Пригласить") {
-                        //                        viewModel.showInviteSelect.toggle()
-                        //                        viewModel.selectedProjectsForInvite = []
-                        //                    }
-                        //                    .buttonStyle(ConditionalButtonStyle(conditional: !viewModel.selectedProjectsForInvite.isEmpty))
-                        //                    .disabled(viewModel.selectedProjectsForInvite.isEmpty)
-                        //                    .padding(.horizontal)
-                    }
-                    .presentationDetents([.medium])
+                    InviteSelectionView(viewModel: viewModel, isSendingInvites: $isSendingInvites)
                 })
             }
         }
     }
 }
-
-

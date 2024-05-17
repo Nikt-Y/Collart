@@ -2,21 +2,19 @@
 //  PortfolioCell.swift
 //  Collart
 //
-//  Created by Nik Y on 26.03.2024.
-//
 
 import SwiftUI
 import CachedAsyncImage
 
 struct PortfolioCell: View {
     @EnvironmentObject var settingsManager: SettingsManager
+    @State var isShowingDetailProject = false
 
-    var imageName: String
-    var title: String
+    var project: PortfolioProject
 
     var body: some View {
         VStack {
-            CachedAsyncImage(url: URL(string: !imageName.isEmpty ? imageName : "no url"), urlCache: .imageCache) { phase in
+            CachedAsyncImage(url: URL(string: !project.projectImage.isEmpty ? project.projectImage : "no url"), urlCache: .imageCache) { phase in
                 switch phase {
                 case .success(let image):
                     image
@@ -39,10 +37,10 @@ struct PortfolioCell: View {
             }
                 .frame(height: 100)
                 .clipped()
-                .foregroundColor(.black)
                 .clipped()
-
-            Text(title)
+                .contentShape(Rectangle())
+            
+            Text(project.projectName)
                 .font(.system(size: settingsManager.textSizeSettings.body))
                 .foregroundColor(settingsManager.currentTheme.textColorPrimary)
                 .multilineTextAlignment(.leading)
@@ -55,10 +53,11 @@ struct PortfolioCell: View {
         .background(settingsManager.currentTheme.backgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .shadow(radius: 2)
+        .onTapGesture {
+            isShowingDetailProject = true
+        }
+        .navigationDestination(isPresented: $isShowingDetailProject) {
+            PortfolioView(project: project)
+        }
     }
-}
-
-#Preview {
-    PortfolioCell(imageName: "", title: "Feel Good Co.")
-        .environmentObject(SettingsManager())
 }

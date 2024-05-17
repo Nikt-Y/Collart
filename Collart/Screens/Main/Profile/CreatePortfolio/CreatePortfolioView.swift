@@ -2,8 +2,6 @@
 //  CreatePortfolioView.swift
 //  Collart
 //
-//  Created by Nik Y on 14.05.2024.
-//
 
 import SwiftUI
 
@@ -90,45 +88,3 @@ struct CreatePortfolioView: View {
         }
     }
 }
-
-import Foundation
-import UIKit
-
-class CreatePortfolioViewModel: ObservableObject {
-    @Published var name: String = ""
-    @Published var description: String = ""
-    @Published var image: UIImage? = nil
-    @Published var fileUrls: [URL] = []
-    
-    @Published var isValidName: Bool = false
-    @Published var isValidDesc: Bool = false
-    
-    @Published var isLoading = false
-    
-    func submitPortfolio(completion: @escaping () -> ()) {
-        let portfolioDetails = PortfolioProjectParameters(
-            name: name,
-            description: description
-        )
-
-        let portfolioForm = PortfolioProjectForm(
-            parameters: portfolioDetails,
-            image: image,
-            files: fileUrls.reduce(into: [String: URL]()) { result, url in result["file\(result.count + 1)"] = url }
-        )
-
-        NetworkService.addPortfolio(portfolioForm: portfolioForm) { success, error in
-            if success {
-                print("Portfolio added successfully.")
-            } else if let error = error {
-                print("Error adding portfolio: \(error.localizedDescription)")
-            }
-            completion()
-        }
-    }
-    
-    var canProceed: Bool {
-        return isValidName && isValidDesc
-    }
-}
-

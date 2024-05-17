@@ -2,12 +2,11 @@
 //  RegistrationViewModel.swift
 //  Collart
 //
-//  Created by Nik Y on 24.01.2024.
-//
 
-import Foundation
+import SwiftUI
 
 class RegistrationViewModel: ObservableObject {
+    @Environment(\.networkService) private var networkService: NetworkService
     @Published var name: String = ""
     @Published var login: String = ""
     @Published var mail: String = ""
@@ -23,6 +22,10 @@ class RegistrationViewModel: ObservableObject {
     @Published var isSelectedActivity: Bool = false
 
     @Published var searchText: String = ""
+    
+    private var authenticationService: AuthenticationServiceDelegate {
+        networkService
+    }
 
     var skillList: [Skill] {
         let filteredSkills = Skill.skills.filter { skill in
@@ -66,21 +69,21 @@ class RegistrationViewModel: ObservableObject {
             return
         }
         isLoading = true
-        NetworkService.registerUser(
+        authenticationService.registerUser(
             email: mail,
             password: password,
             confirmPassword: password,
             name: name,
             surname: "",
             description: "",
-            userPhoto: "",
-            cover: "",
+            userPhoto: "http://example.com/path/to/photo",
+            cover: "http://example.com/path/to/cover",
             searchable: true,
             experience: "no_experience",
             skills: skills.compactMap({ $0.isEmpty ? nil : $0 }),
             tools: []) { success, error in
                 if success {
-                    NetworkService.loginUser(email: self.mail, password: password) { success, error in
+                    self.authenticationService.loginUser(email: self.mail, password: password) { success, error in
                         if !success {
                             print("login error")
                         }

@@ -2,14 +2,13 @@
 //  ProjectCell.swift
 //  Collart
 //
-//  Created by Nik Y on 17.02.2024.
-//
 
 import SwiftUI
 import CachedAsyncImage
 
 struct ProjectCell: View {
     @EnvironmentObject var settingsManager: SettingsManager
+    @Environment(\.networkService) private var networkService: NetworkService
     @State var isAvailable: Bool = true
     @State var isShowingDetailProject = false
     @State private var isFavorite: Bool = false
@@ -17,6 +16,9 @@ struct ProjectCell: View {
     var onRespond: ((_ project: Order, _ completion: @escaping () -> ()) -> ())?
 
     @State private var isLoading = false
+    private var orderService: OrderServiceDelegate {
+        networkService
+    }
     
     var body: some View {
         VStack {
@@ -155,14 +157,14 @@ struct ProjectCell: View {
     
     private func toggleFavoriteStatus() {
         if isFavorite {
-            NetworkService.removeOrderFromFavorites(orderId: project.id) { success, error in
+            orderService.removeOrderFromFavorites(orderId: project.id) { success, error in
                 if success {
                     UserManager.shared.user.liked.removeAll { $0.id == project.id }
                     isFavorite = false
                 }
             }
         } else {
-            NetworkService.addOrderToFavorites(orderId: project.id) { success, error in
+            orderService.addOrderToFavorites(orderId: project.id) { success, error in
                 if success {
                     UserManager.shared.user.liked.append(project)
                     isFavorite = true
@@ -171,11 +173,3 @@ struct ProjectCell: View {
         }
     }
 }
-
-
-//struct ProjectCell_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ProjectCell()
-//            .environmentObject(SettingsManager())
-//    }
-//}

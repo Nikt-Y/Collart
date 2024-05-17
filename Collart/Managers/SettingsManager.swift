@@ -2,11 +2,10 @@
 //  SettingsManager.swift
 //  Collart
 //
-//  Created by Nik Y on 28.12.2023.
-//
 
 import SwiftUI
 
+// MARK: - Theme protocol
 protocol Theme {
     var primaryColor: Color { get }
     var lightPrimaryColor: Color { get }
@@ -24,6 +23,7 @@ protocol Theme {
     func selectedTextColor(isSelected: Bool) -> Color 
 }
 
+// MARK: - TextSizable protocol
 protocol TextSizable {
     var appName: CGFloat { get }
     var title: CGFloat { get }
@@ -32,12 +32,11 @@ protocol TextSizable {
     var pageName: CGFloat { get }
     var semiPageName: CGFloat { get }
     var little: CGFloat { get }
-    // Можете добавить другие свойства для разных стилей текста
     
     func adjustFontSize(for sizeCategory: ContentSizeCategory) -> Self
-    // Добавьте другие методы, если необходимо
 }
 
+// MARK: - LightTheme
 struct LightTheme: Theme {
     var primaryColor = Color(hex: "7700DD")
     var lightPrimaryColor = Color(hex: "E4CCF8")
@@ -58,6 +57,7 @@ struct LightTheme: Theme {
     }
 }
 
+// MARK: - DefaultTextSizes
 struct DefaultTextSizes: TextSizable {
     var appName: CGFloat = 36
     var pageName: CGFloat = 22
@@ -82,11 +82,13 @@ struct DefaultTextSizes: TextSizable {
     }
 }
 
+// MARK: - Languages
 enum Language: String {
     case ru = "ru"
     case en = "en"
 }
 
+// MARK: - SettingsManager
 class SettingsManager: ObservableObject {
     @Published var currentTheme: Theme = LightTheme()
     @Published var textSizeSettings: TextSizable = DefaultTextSizes()

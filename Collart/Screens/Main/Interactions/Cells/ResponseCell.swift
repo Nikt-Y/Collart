@@ -2,15 +2,14 @@
 //  ResponseCell.swift
 //  Collart
 //
-//  Created by Nik Y on 28.03.2024.
-//
 
 import SwiftUI
 import CachedAsyncImage
 
 struct ResponseCell: View {
     @EnvironmentObject var settingsManager: SettingsManager
-    
+    @Environment(\.networkService) private var networkService: NetworkService
+
     var id: String
     var responser: User
     var project: Order
@@ -18,6 +17,10 @@ struct ResponseCell: View {
     @State var status: InteractionStatus
     @State var rejectLoading = false
     @State var acceptLoading = false
+    
+    private var interactionsService: InteractionsServiceDelegate {
+        networkService
+    }
     
     var body: some View {
         VStack {
@@ -71,7 +74,7 @@ struct ResponseCell: View {
                     .frame(width: 40, height: 40)
                     .overlay(Circle().stroke(settingsManager.currentTheme.backgroundColor, lineWidth: 2))
                 
-                Text("\(responser.name) откликнулся на Ваш проект \(project.projectName)!")
+                Text("\((responser.name + " " + responser.surname).trimmingCharacters(in: [" "])) откликнулся на Ваш проект \(project.projectName)!")
                     .font(.system(size: settingsManager.textSizeSettings.subTitle))
                     .foregroundColor(settingsManager.currentTheme.textColorPrimary)
                     .padding(.vertical, 4)
@@ -88,7 +91,7 @@ struct ResponseCell: View {
                 case .active:
                     Button {
                         rejectLoading = true
-                        NetworkService.Interactions.rejectInteraction(interactionId: id, getterID: UserManager.shared.user.id) { success, error in
+                        interactionsService.rejectInteraction(interactionId: id, getterID: UserManager.shared.user.id) { success, error in
                             if success {
                                 status = .rejected
                             }
@@ -108,7 +111,7 @@ struct ResponseCell: View {
                     
                     Button {
                         acceptLoading = true
-                        NetworkService.Interactions.acceptInteraction(interactionId: id, getterID: UserManager.shared.user.id) { success, error in
+                        interactionsService.acceptInteraction(interactionId: id, getterID: UserManager.shared.user.id) { success, error in
                             if success {
                                 status = .accepted
                             }
@@ -160,8 +163,3 @@ struct ResponseCell: View {
         .padding(.bottom, 2)
     }
 }
-
-//#Preview {
-//    ResponseCell(responser: User(id: "zc"), project: .init(id:"sdf", projectImage: "", projectName: "Project Name", roleRequired: "Role Required", requirement: "Что-то сделать", experience: "3 года", tools: "Фотошоп, Xcode", authorAvatar: "", authorName: "Никитос Кокос", ownerID: "dfs", description: ""))
-//        .environmentObject(SettingsManager())
-//}

@@ -2,8 +2,6 @@
 //  ChatListCellView.swift
 //  Collart
 //
-//  Created by Nik Y on 22.04.2024.
-//
 
 import SwiftUI
 import CachedAsyncImage
@@ -109,9 +107,3 @@ struct ChatListCellView: View {
         .background(settings.currentTheme.backgroundColor)
     }
 }
-
-//
-//#Preview {
-//    ChatListCellView(spec: specialist1, lastMessage: "Здарова", status: .unreaded, time: "11:11", numOfUnread: 0)
-//        .environmentObject(SettingsManager())
-//}

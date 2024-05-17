@@ -2,11 +2,10 @@
 //  LoginView.swift
 //  Collart
 //
-//  Created by Nik Y on 02.01.2024.
-//
 
 import SwiftUI
 
+// MARK: - LoginView
 struct LoginView: View {
     @StateObject private var viewModel: LoginViewModel = LoginViewModel()
     @FocusState private var focusedField: Field?
@@ -35,7 +34,6 @@ struct LoginView: View {
                 HStack {
                     Spacer()
                     Button {
-                        // TODO: Восстановление пароля
                     } label: {
                         Text("Забыли пароль?")
                             .foregroundColor(settingsManager.currentTheme.primaryColor)
@@ -59,9 +57,6 @@ struct LoginView: View {
                         .font(.system(size: settingsManager.textSizeSettings.semiPageName, weight: .semibold))
                 }
                 .padding(.bottom, 4)
-                
-                // TODO: Вход через это + мб вынести эту вью в отдельный файл
-//                BottomView(googleAction: {}, facebookAction: {}, appleAction: {})
             }
             .padding(20)
             
@@ -103,14 +98,7 @@ struct LoginView: View {
     }
 }
 
-struct LoginView_Previews: PreviewProvider {
-    static var previews: some View {
-        LoginView()
-            .preferredColorScheme(.dark)
-            .environmentObject(SettingsManager())
-    }
-}
-
+// MARK: - BottomView
 struct BottomView: View {
     @EnvironmentObject var settingsManager: SettingsManager
     var googleAction: () -> Void

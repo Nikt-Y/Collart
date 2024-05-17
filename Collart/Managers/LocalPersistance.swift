@@ -2,16 +2,17 @@
 //  LocalPersistance.swift
 //  Collart
 //
-//  Created by Nik Y on 08.05.2024.
-//
 
 import Foundation
+import Security
 
-// MARK: - UserDefaults Keys
+// MARK: - Keys
 fileprivate let kUserID = "kUserID"
-fileprivate let kToken = "kToken"
 fileprivate let kLanguage = "kLanguage"
+fileprivate let kSalt = "salt"
+fileprivate let kTokenKeychainKey = "kTokenKeychainKey"
 
+// MARK: - LocalPersistence
 final class LocalPersistence {
     static var shared: LocalPersistence = {
         let instance = LocalPersistence()
@@ -32,10 +33,14 @@ final class LocalPersistence {
     
     var token: String? {
         set (newVal) {
-            UserDefaults.standard.set(newVal, forKey: kToken)
+            if let token = newVal {
+                saveToken(token: token, forKey: kTokenKeychainKey)
+            } else {
+                deleteToken(forKey: kTokenKeychainKey)
+            }
         }
         get {
-            UserDefaults.standard.string(forKey: kToken)
+            return retrieveToken(forKey: kTokenKeychainKey)
         }
     }
     
@@ -46,5 +51,52 @@ final class LocalPersistence {
         get {
             UserDefaults.standard.string(forKey: kLanguage)
         }
+    }
+    
+    var salt: String? {
+        get {
+            UserDefaults.standard.string(forKey: kSalt)
+        }
+    }
+    
+    // MARK: - Keychain Helpers
+    
+    private func saveToken(token: String, forKey key: String) {
+        if let data = token.data(using: .utf8) {
+            let query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrAccount as String: key,
+                kSecValueData as String: data
+            ]
+            
+            SecItemDelete(query as CFDictionary)
+            SecItemAdd(query as CFDictionary, nil)
+        }
+    }
+    
+    private func retrieveToken(forKey key: String) -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: key,
+            kSecReturnData as String: kCFBooleanTrue!,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        var dataTypeRef: AnyObject? = nil
+        let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
+        
+        if status == errSecSuccess, let data = dataTypeRef as? Data, let token = String(data: data, encoding: .utf8) {
+            return token
+        }
+        return nil
+    }
+    
+    private func deleteToken(forKey key: String) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: key
+        ]
+        
+        SecItemDelete(query as CFDictionary)
     }
 }

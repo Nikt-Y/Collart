@@ -2,8 +2,6 @@
 //  OnboardingViewModel.swift
 //  Collart
 //
-//  Created by Nik Y on 28.12.2023.
-//
 
 import SwiftUI
 
@@ -35,5 +33,13 @@ class OnboardingViewModel: ObservableObject {
         withAnimation {
             isLast = true
         }
+    }
+    
+    func registerDefaults() {
+        let defaults: [String: Any] = [
+            "salt": "9nNnI5dZm3c=",
+        ]
+        
+        UserDefaults.standard.register(defaults: defaults)
     }
 }

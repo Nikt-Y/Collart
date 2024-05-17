@@ -1,3 +1,8 @@
+//
+//  EditProfileView.swift
+//  Collart
+//
+
 import SwiftUI
 
 struct EditProfileView: View {
@@ -303,6 +308,7 @@ struct EditProfileView: View {
     }
 }
 
+// MARK: - SkillSelectionView
 struct SkillSelectionView: View {
     @Binding var skills: [Skill]
     var onSelect: ((String) -> Void)? = nil
@@ -333,6 +339,7 @@ struct SkillSelectionView: View {
     }
 }
 
+// MARK: - ExperienceSelectionView
 struct ExperienceSelectionView: View {
     let experiences: [Experience]
     var selectedExperience: Experience
@@ -362,6 +369,7 @@ struct ExperienceSelectionView: View {
     }
 }
 
+// MARK: - ToolSelectionView
 struct ToolSelectionView: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @Binding var tools: [String]
