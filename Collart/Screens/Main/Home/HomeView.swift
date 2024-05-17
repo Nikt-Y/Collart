@@ -22,7 +22,6 @@ enum Tab: Pickable, CaseIterable {
 struct HomeView: View {
     @EnvironmentObject private var settings: SettingsManager
     @StateObject private var viewModel = HomeViewModel()
-    @State private var searchText = ""
     @State private var selectedTab: Tab = .projects
     @State private var showFilters: Bool = false
     @State private var isFiltersFetched = false
@@ -31,7 +30,7 @@ struct HomeView: View {
     @State private var isShowingDetailProject = false
     @State private var selectedSpecialists: Specialist?
     @State private var isShowingDetailSpecialist = false
-    @State private var isLoading = false
+    @State private var isSendingInvites = false
     
     var body: some View {
         NavigationStack {
@@ -53,7 +52,7 @@ struct HomeView: View {
                     }
             } else {
                 VStack {
-                    SearchBarPro(text: $searchText, showFilters: $showFilters)
+                    SearchBarPro(text: $viewModel.searchText, showFilters: $showFilters)
                         .padding()
                     
                     CustomPicker(selectedTab: $selectedTab)
@@ -87,7 +86,7 @@ struct HomeView: View {
                         },
                         progress: { state in
                             if state == .waiting {
-                                Text("Pull to refresh")
+                                Image("arrowDown")
                                     .foregroundColor(settings.currentTheme.textColorPrimary)
                             } else {
                                 ProgressView()
@@ -96,50 +95,80 @@ struct HomeView: View {
                         }) {
                             LazyVStack {
                                 if selectedTab == .projects {
-                                    if viewModel.projects.isEmpty {
+                                    if viewModel.isLoading {
                                         Spacer(minLength: 50)
                                         ProgressView()
                                             .progressViewStyle(CircularProgressViewStyle(tint: settings.currentTheme.primaryColor))
                                             .scaleEffect(3)
-                                            .onAppear {
-                                                viewModel.fetchProjects {}
-                                            }
                                     } else {
-                                        ForEach(viewModel.projects) { project in
-                                            ProjectCell(project: project, onRespond: viewModel.handleResponse)
-                                                .listRowSeparator(.hidden)
-                                                .transition(.opacity)
-                                        }
-                                        .listRowBackground(Color.clear)
+                                        
+                                        
+                                            if viewModel.filteredOrders.isEmpty {
+                                                Text("Проекты не найдены")
+                                                    .padding()
+                                                    .padding(.top, 50)
+                                            } else {
+                                                ForEach(viewModel.filteredOrders) { project in
+                                                    ProjectCell(project: project, onRespond: viewModel.handleResponse)
+                                                        .listRowSeparator(.hidden)
+                                                        .transition(.opacity)
+                                                }
+                                                .listRowBackground(Color.clear)
+                                            }
+                                        
                                     }
                                 } else {
-                                    if viewModel.specialists.isEmpty {
+                                    if viewModel.isLoading {
                                         Spacer(minLength: 50)
                                         ProgressView()
                                             .progressViewStyle(CircularProgressViewStyle(tint: settings.currentTheme.primaryColor))
                                             .scaleEffect(3)
-                                            .onAppear {
-                                                viewModel.fetchSpecialists {}
-                                            }
                                     } else {
-                                        ForEach(viewModel.specialists) { specialist in
-                                            SpecialistCell(specialist: specialist, onRespond: {
-                                                viewModel.handleInvite(spec: specialist)
-                                            })
-                                            .listRowSeparator(.hidden)
-                                            .transition(.opacity)
-                                            .onTapGesture {
-                                                selectedSpecialists = specialist
-                                                isShowingDetailSpecialist = true
+                                        
+                                        
+                                            if viewModel.filteredSpecs.isEmpty {
+                                                Text("Специалисты не найдены")
+                                                    .padding()
+                                                    .padding(.top, 50)
+                                            } else {
+                                                ForEach(viewModel.filteredSpecs) { specialist in
+                                                    SpecialistCell(specialist: specialist, onRespond: {
+                                                        viewModel.handleInvite(spec: specialist)
+                                                    })
+                                                    .listRowSeparator(.hidden)
+                                                    .transition(.opacity)
+                                                    .onTapGesture {
+                                                        selectedSpecialists = specialist
+                                                        isShowingDetailSpecialist = true
+                                                    }
+                                                }
+                                                .listRowBackground(Color.clear)
                                             }
-                                        }
-                                        .listRowBackground(Color.clear)
+                                        
                                     }
                                 }
                             }
                             .padding()
                         }
                         .animation(.easeInOut, value: selectedTab)
+                        .onChange(of: selectedTab) { newValue in
+                            viewModel.isLoading = true
+                            if newValue == .projects {
+                                viewModel.fetchProjects {
+                                }
+                            } else {
+                                viewModel.fetchSpecialists {
+                                }
+                            }
+                        }
+                        .onAppear {
+                            viewModel.isLoading = true
+                            viewModel.fetchProjects {
+                            }
+                        }
+                }
+                .onTapGesture {
+                    hideKeyboard()
                 }
                 .background(settings.currentTheme.backgroundColor)
                 .navigationDestination(isPresented: $isShowingDetailProject) {
@@ -149,11 +178,13 @@ struct HomeView: View {
                 }
                 .navigationDestination(isPresented: $isShowingDetailSpecialist) {
                     if let specialist = selectedSpecialists {
-                        DetailSpecialitstView(viewModel: DetailSpecialitstViewModel(specProfile: specialist))
+                        DetailSpecialistView(viewModel: DetailSpecialistViewModel(specProfile: specialist))
                     }
                 }
                 .sheet(isPresented: $showFilters) {
                     FiltersView(viewModel: viewModel, isActive: $showFilters)
+                        .ignoresSafeArea(.keyboard, edges: .bottom)
+
                 }
                 .onChange(of: showFilters, perform: { newValue in
                     viewModel.applyFilters()
@@ -230,17 +261,17 @@ struct HomeView: View {
                         
                         
                         Button {
-                            isLoading = true
+                            isSendingInvites = true
                             for selectedProjectsForInvite in viewModel.selectedProjectsForInvite {
                                 NetworkService.Interactions.sendInvite(orderID: selectedProjectsForInvite.id, getterID: viewModel.selectedSpecialist?.id ?? "") { success, error in
-                                    isLoading = false
+                                    isSendingInvites = false
                                     viewModel.showInviteSelect.toggle()
                                     viewModel.selectedProjectsForInvite = []
                                 }
                             }
                             
                         } label: {
-                            if isLoading {
+                            if isSendingInvites {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
@@ -265,17 +296,4 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Components
-
-// MARK: - Data Models
-
-// MARK: - Preview
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        HomeView()
-            .environmentObject(SettingsManager())
-            .preferredColorScheme(.dark)
-    }
-}
 

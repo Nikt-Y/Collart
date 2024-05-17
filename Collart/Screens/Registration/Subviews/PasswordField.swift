@@ -18,15 +18,23 @@ struct PasswordField: View {
     var errorText: String = ""
     
     @State private var isEdited: Bool = false
-    @State private var isFocused: Bool = false
-    @FocusState private var focusedField: Int?
-
+    @FocusState private var focusedField: Bool
+    
     var body: some View {
         VStack {
             SecureField("", text: $fieldText, prompt: Text(placeHolder).foregroundColor(settingsManager.currentTheme.textColorLightPrimary))
-                .focused($focusedField, equals: 0)
+                .autocapitalization(.none)
+                .focused($focusedField)
                 .padding()
-                .background(RoundedRectangle(cornerRadius: 100).strokeBorder(settingsManager.currentTheme.selectedTextColor(isSelected: focusedField == 0 || !fieldText.isEmpty), lineWidth: 1))
+                .background(
+                    RoundedRectangle(cornerRadius: 100)
+                        .strokeBorder(settingsManager.currentTheme.selectedTextColor(isSelected: focusedField || !fieldText.isEmpty), lineWidth: 1)
+                        .background(RoundedRectangle(cornerRadius: 100).fill(Color.clear))
+                        .contentShape(RoundedRectangle(cornerRadius: 100))
+                        .onTapGesture {
+                            focusedField = true
+                        }
+                )
                 .font(.system(size: settingsManager.textSizeSettings.body))
                 .foregroundColor(settingsManager.currentTheme.textColorPrimary)
                 .onChange(of: fieldText) { newValue in
@@ -47,4 +55,3 @@ struct PasswordField: View {
         }
     }
 }
-

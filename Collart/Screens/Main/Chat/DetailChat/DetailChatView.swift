@@ -13,12 +13,16 @@ struct ChatView: View {
     @ObservedObject var viewModel: ChatViewModel
     @Environment(\.dismiss) var dismiss
     
-    var spec: Specialist
+    var specId: String
+    var specImage: String
+    var specName: String
     @State private var messageText = ""
     
-    init(spec: Specialist) {
-        self.spec = spec
-        _viewModel = ObservedObject(wrappedValue: ChatViewModel(senderID: UserManager.shared.user.id, receiverID: spec.id))
+    init(specId: String, specImage: String, specName: String) {
+        self.specId = specId
+        self.specImage = specImage
+        self.specName = specName
+        _viewModel = ObservedObject(wrappedValue: ChatViewModel(senderID: UserManager.shared.user.id, receiverID: specId))
     }
     
     var body: some View {
@@ -33,7 +37,7 @@ struct ChatView: View {
                     }.foregroundColor(settings.currentTheme.textColorPrimary)
                 }
                 
-                CachedAsyncImage(url: URL(string: !spec.specImage.isEmpty ? spec.specImage : "no url"), urlCache: .imageCache) { phase in
+                CachedAsyncImage(url: URL(string: !specImage.isEmpty ? specImage : "no url"), urlCache: .imageCache) { phase in
                     switch phase {
                     case .success(let image):
                         image
@@ -55,7 +59,7 @@ struct ChatView: View {
                     .frame(width: 50, height: 50)
                     .clipShape(Circle())
                 
-                Text(spec.name)
+                Text(specName)
                     .font(.system(size: settings.textSizeSettings.pageName))
                     .foregroundColor(settings.currentTheme.textColorPrimary)
                 Spacer()
@@ -97,17 +101,25 @@ struct ChatView: View {
     
     var messageInputArea: some View {
         HStack {
-            Button(action: attachFile) {
-                Image(systemName: "paperclip").padding()
-            }
+//            Button(action: attachFile) {
+//                Image(systemName: "paperclip").padding()
+//            }
             
-            TextField("Write a message...", text: $messageText)
+            TextField("Сообщение", text: $messageText)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(minHeight: CGFloat(30))
+                .frame(maxHeight: 50)
+                .padding(.leading)
             
-            Button("Send") {
+            Button {
                 viewModel.sendMessage(messageText, isSender: true)
                 messageText = ""
+            } label: {
+                Image("send")
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(settings.currentTheme.primaryColor)
+                    .tint(settings.currentTheme.primaryColor)
+                    .frame(height: 30)
             }
             .padding()
         }
@@ -189,12 +201,14 @@ extension Date {
     func formattedTime() -> String {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "ru_RU")
         return formatter.string(from: self)
     }
     
     func formattedDate() -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
+        formatter.locale = Locale(identifier: "ru_RU")
         return formatter.string(from: self)
     }
 }

@@ -32,6 +32,7 @@ struct CreateOrderView: View {
                     
                     Button {
                         presentActivitiesSheet = true
+                        hideKeyboard()
                     } label: {
                         HStack {
                             if viewModel.activity.isEmpty {
@@ -54,6 +55,8 @@ struct CreateOrderView: View {
                         fieldText: $viewModel.requirement,
                         isValid: $viewModel.isValidReq
                     )
+                    .padding(.bottom, 6)
+
                     
                     TextErrorEditor(
                         placeHolder: "Расскажите подробнее о проекте",
@@ -64,6 +67,7 @@ struct CreateOrderView: View {
                     
                     Button {
                         presentExperienceSheet = true
+                        hideKeyboard()
                     } label: {
                         HStack {
                             Text(viewModel.experience.isEmpty ? "Опыт работы" : Experience.fromString(viewModel.experience).text)
@@ -77,15 +81,17 @@ struct CreateOrderView: View {
                     
                     Button {
                         presentSoftwareSheet = true
+                        hideKeyboard()
                     } label: {
                         HStack {
-                            Text(viewModel.software.isEmpty ? "Программы" : viewModel.software)
+                            Text(viewModel.tools.isEmpty ? "Программы" : viewModel.tools.joined(separator: ", "))
+                                .lineLimit(1)
                             Spacer()
                             Image("arrowDown")
                         }
                         .padding()
-                        .background(RoundedRectangle(cornerRadius: 100).strokeBorder(settings.currentTheme.selectedTextColor(isSelected: !viewModel.software.isEmpty), lineWidth: 1))
-                        .foregroundColor(settings.currentTheme.selectedTextColor(isSelected: !viewModel.software.isEmpty))
+                        .background(RoundedRectangle(cornerRadius: 100).strokeBorder(settings.currentTheme.selectedTextColor(isSelected: !viewModel.tools.isEmpty), lineWidth: 1))
+                        .foregroundColor(settings.currentTheme.selectedTextColor(isSelected: !viewModel.tools.isEmpty))
                     }
                     
                     HStack {
@@ -232,38 +238,7 @@ struct CreateOrderView: View {
         }
         .sheet(isPresented: $presentSoftwareSheet) {
             NavigationStack {
-                VStack {
-                    SearchBarLight(text: $viewModel.searchText)
-                        .padding(.top)
-                        .padding(.horizontal, 10)
-                    
-                    List(viewModel.softwareList) { tool in
-                        HStack {
-                            Text(tool.text)
-                                .foregroundColor(settings.currentTheme.textColorPrimary)
-                            Spacer()
-                        }
-                        .listRowBackground(settings.currentTheme.backgroundColor)
-                        .onTapGesture {
-                            viewModel.software = tool.text
-                            viewModel.isSelectedSoftware = true
-                            presentSoftwareSheet = false
-                        }
-                    }
-                    .listStyle(.plain)
-                    .overlay(Group {
-                        if viewModel.softwareList.isEmpty {
-                            Text("Ничего не найдено...")
-                                .foregroundColor(settings.currentTheme.textColorPrimary)
-                        }
-                    })
-                }
-                .onAppear {
-                    viewModel.searchText = ""
-                }
-                .background(settings.currentTheme.backgroundColor)
-                .animation(.default, value: viewModel.softwareList.isEmpty)
-                .animation(.default, value: viewModel.searchText)
+                ToolSelectionView(tools: $viewModel.tools)
             }
             .presentationDetents([.medium, .large])
         }

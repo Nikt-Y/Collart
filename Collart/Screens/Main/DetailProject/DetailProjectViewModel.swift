@@ -8,8 +8,11 @@
 import Foundation
 
 class DetailProjectViewModel: ObservableObject {
-    var project: Order?
+    var project: Order
 
+    init(project: Order) {
+        self.project = project
+    }
 }
 
 import Foundation

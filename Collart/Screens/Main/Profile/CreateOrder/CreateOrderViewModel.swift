@@ -14,7 +14,7 @@ class CreateOrderViewModel: ObservableObject {
     @Published var description: String = ""
     @Published var activity: String = ""
     @Published var experience: String = ""
-    @Published var software: String = ""
+    @Published var tools: [String] = []
     @Published var startDate = Date()
     @Published var endDate = Date().addingTimeInterval(604800)
     @Published var image: UIImage? = nil
@@ -25,9 +25,12 @@ class CreateOrderViewModel: ObservableObject {
     @Published var isValidDesc: Bool = false
     @Published var isSelectedActivity: Bool = false
     @Published var isSelectedExperience: Bool = false
-    @Published var isSelectedSoftware: Bool = false
     @Published var isStartDatePicked: Bool = false
     @Published var isEndDatePicked: Bool = false
+    
+    var isSelectedSoftware: Bool {
+        !tools.isEmpty
+    }
     
     @Published var searchText: String = ""
     
@@ -40,7 +43,7 @@ class CreateOrderViewModel: ObservableObject {
             experience: experience,
             dataStart: String(Int(startDate.timeIntervalSince1970)),
             dataEnd: String(Int(endDate.timeIntervalSince1970)),
-            tools: [software]
+            tools: tools
         )
 
         let orderForm = OrderForm(

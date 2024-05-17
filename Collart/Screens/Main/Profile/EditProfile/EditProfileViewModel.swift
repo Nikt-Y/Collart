@@ -5,8 +5,8 @@ class EditProfileViewModel: ObservableObject {
     @Published var name: String
     @Published var surname: String
     @Published var email: String
-    @Published var skills: [Skill]
-    @Published var tools: [Tool]
+    @Published var skills: [String]
+    @Published var tools: [String]
     @Published var experience: Experience
     @Published var profession: String
     @Published var subProfessions: [String]
@@ -21,21 +21,14 @@ class EditProfileViewModel: ObservableObject {
     @Published var showSkillSheet: Bool = false
     @Published var showToolSheet: Bool = false
     @Published var isLoading: Bool = false
+    @Published var searchText = ""
     
     init(user: User) {
         self.name = user.name
         self.surname = user.surname
         self.email = user.email
-        self.skills = Skill.skills.map { skill in
-            var newSkill = skill
-            newSkill.isSelected = user.profession == skill.text || user.subProfessions.contains(skill.text)
-            return newSkill
-        }
-        self.tools = Tool.tools.map { tool in
-            var newTool = tool
-            newTool.isSelected = user.tools.contains(tool.text)
-            return newTool
-        }
+        self.skills = [user.profession] + user.subProfessions
+        self.tools = user.tools
         self.experience = Experience.fromString(user.experience)
         self.profession = user.profession
         self.subProfessions = user.subProfessions
@@ -46,10 +39,31 @@ class EditProfileViewModel: ObservableObject {
         return isValidName && isValidEmail
     }
     
+    var skillList: [Skill] {
+        let filteredSkills = Skill.skills.filter { skill in
+            !skills.contains(skill.text)
+        }
+        if searchText.isEmpty {
+            return filteredSkills
+        } else {
+            return filteredSkills.filter { $0.text.lowercased().contains(searchText.lowercased()) }
+        }
+    }
+    
+    func addSkill() {
+        if skills.count < 3 {
+            skills.append("")
+        }
+    }
+
+    func removeSkill() {
+        if skills.count > 1 {
+            skills.removeLast()
+        }
+    }
+
+    
     func saveChanges(completion: @escaping (Bool, Error?) -> Void) {
-        let selectedSkills = skills.filter { $0.isSelected }.map { $0.text }
-        let selectedTools = tools.filter { $0.isSelected }.map { $0.text }
-        
         isLoading = true
         
         NetworkService.updateUserProfile(
@@ -58,22 +72,19 @@ class EditProfileViewModel: ObservableObject {
             surname: surname,
             searchable: searchable ? "true" : "false",
             experience: experience.rawValue,
-            passwordHash: password.isEmpty ? nil : hashPassword(password),
-            confirmPasswordHash: password.isEmpty ? nil : hashPassword(password),
+            passwordHash: password.isEmpty ? nil : UserManager.hashPassword(password),
+            confirmPasswordHash: password.isEmpty ? nil : UserManager.hashPassword(password),
             description: nil,
-            skills: selectedSkills,
-            tools: selectedTools,
+            skills: skills.filter({ !$0.isEmpty }),
+            tools: tools,
             image: image,
             cover: cover,
             completion: { success, error in
-                self.isLoading = false
-                completion(success, error)
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    completion(success, error)
+                }
             }
         )
-    }
-    
-    private func hashPassword(_ password: String) -> String {
-        // Хеширование пароля
-        return password // Здесь должен быть ваш алгоритм хеширования
     }
 }

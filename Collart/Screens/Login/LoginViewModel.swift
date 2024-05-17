@@ -26,13 +26,16 @@ class LoginViewModel: ObservableObject {
     
     // Функция для попытки входа
     func attemptLogin() {
-        startFakeNetworkCall()
-        
+        tryLogin()
     }
     
-    private func startFakeNetworkCall() {
-        isLoading = true
+    private func tryLogin() {
         print(password)
+//        guard let password = UserManager.hashPassword(password) else {
+//            return
+//        }
+//        print(password)
+        isLoading = true
         NetworkService.loginUser(email: login, password: password) { success, error in
                 DispatchQueue.main.async {
                     self.isLoading = false

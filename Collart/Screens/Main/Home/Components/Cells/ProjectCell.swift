@@ -113,26 +113,28 @@ struct ProjectCell: View {
                 }
                 .padding(.bottom, 10)
 
-                Button {
-                    print("button tap")
-                    if isAvailable {
-                        isLoading = true
-                        onRespond?(project) {
-                            print("tap button \(project.projectName)")
-                            isAvailable.toggle()
-                            isLoading = false
+                if project.ownerID != UserManager.shared.user.id {
+                    Button {
+                        print("button tap")
+                        if isAvailable {
+                            isLoading = true
+                            onRespond?(project) {
+                                print("tap button \(project.projectName)")
+                                isAvailable.toggle()
+                                isLoading = false
+                            }
+                        }
+                    } label: {
+                        if isLoading {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        } else {
+                            Text(isAvailable ? "Откликнуться" : "Заявка отправлена")
                         }
                     }
-                } label: {
-                    if isLoading {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    } else {
-                        Text(isAvailable ? "Откликнуться" : "Заявка отправлена")
-                    }
+                    .buttonStyle(ConditionalButtonStyle(conditional: isAvailable))
+                    .disabled(!isAvailable)
                 }
-                .buttonStyle(ConditionalButtonStyle(conditional: isAvailable))
-                .disabled(!isAvailable)
             }
             .padding()
         }

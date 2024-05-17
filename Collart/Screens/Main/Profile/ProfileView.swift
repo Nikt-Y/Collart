@@ -125,6 +125,7 @@ struct ProfileView: View {
                             Text(viewModel.specProfile.subProfessions.joined(separator: ", "))
                                 .font(.system(size: settings.textSizeSettings.title))
                                 .foregroundColor(settings.currentTheme.textDescriptionColor)
+                                .multilineTextAlignment(.center)
                         }
                         
                         Text(viewModel.specProfile.email)
@@ -158,6 +159,11 @@ struct ProfileView: View {
                                     }
                                     .padding(.vertical, 10)
                                     .padding(.horizontal, 10)
+                                    .overlay {
+                                        if viewModel.specProfile.portfolioProjects.isEmpty {
+                                            Text("Нет проектов в портфолио")
+                                        }
+                                    }
                                 }
                             case .collaborations:
                                 if isLoading && viewModel.specProfile.oldProjects.isEmpty {
@@ -180,6 +186,11 @@ struct ProfileView: View {
                                     }
                                     .padding(.vertical, 10)
                                     .padding(.horizontal)
+                                    .overlay {
+                                        if viewModel.specProfile.oldProjects.isEmpty {
+                                            Text("Нет активных коллабораций")
+                                        }
+                                    }
                                 }
                             case .active:
                                 if isLoading && viewModel.specProfile.activeProjects.isEmpty {
@@ -194,7 +205,6 @@ struct ProfileView: View {
                                         .padding(.top, 70)
                                     }
                                 } else {
-                                    
                                     LazyVStack(spacing: 20) {
                                         ForEach(viewModel.specProfile.activeProjects, id: \.id) { item in
                                             ProjectCell(project: item)
@@ -202,6 +212,11 @@ struct ProfileView: View {
                                     }
                                     .padding(.vertical, 10)
                                     .padding(.horizontal, 20)
+                                    .overlay {
+                                        if viewModel.specProfile.activeProjects.isEmpty {
+                                            Text("Нет активных проектов")
+                                        }
+                                    }
                                 }
                             case .liked:
                                 if isLoading && viewModel.specProfile.liked.isEmpty {
@@ -224,7 +239,11 @@ struct ProfileView: View {
                                     }
                                     .padding(.top, 5)
                                     .padding(.horizontal, 20)
-                                    
+                                    .overlay {
+                                        if viewModel.specProfile.liked.isEmpty {
+                                            Text("Нет избранных проектов")
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -282,7 +301,7 @@ struct ProfileView: View {
 
             }
         }
-        .onAppear {
+        .onAppear {            
             userLoading = .loading
             viewModel.fetchUser { success in
                 if success {

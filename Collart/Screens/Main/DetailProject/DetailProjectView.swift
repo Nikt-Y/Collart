@@ -9,7 +9,6 @@ import SwiftUI
 import CachedAsyncImage
 
 struct DetailProjectView: View {
-    @StateObject private var viewModel = DetailProjectViewModel()
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.dismiss) var dismiss
     @State private var isFavorite: Bool = false
@@ -18,7 +17,6 @@ struct DetailProjectView: View {
     
     init(project: Order) {
         self.project = project
-        viewModel.project = project
     }
     
     var body: some View {
@@ -113,19 +111,27 @@ struct DetailProjectView: View {
                 }
             }
             
-            HStack {
-                Button("Написать") {
-                    // action
+            if project.ownerID != UserManager.shared.user.id {
+                HStack {
+                    NavigationLink {
+                        ChatView(
+                            specId: project.ownerID,
+                            specImage: project.authorAvatar,
+                            specName: project.authorName
+                        )
+                    } label: {
+                        Text("Написать")
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .padding(.horizontal)
+                    .padding(.vertical, 7)
+                    
+                    Button("Откликнуться") {
+                    }
+                    .buttonStyle(ConditionalButtonStyle(conditional: true))
+                    .padding(.horizontal)
+                    .padding(.vertical, 7)
                 }
-                .buttonStyle(SecondaryButtonStyle())
-                .padding(.horizontal)
-                .padding(.vertical, 7)
-                
-                Button("Откликнуться") {
-                }
-                .buttonStyle(ConditionalButtonStyle(conditional: true))
-                .padding(.horizontal)
-                .padding(.vertical, 7)
             }
         }
         .background(settings.currentTheme.backgroundColor)
@@ -141,13 +147,24 @@ struct DetailProjectView: View {
                         }
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    toggleFavoriteStatus()
-                }) {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .resizable()
-                        .frame(width: 20, height: 20)
-                        .foregroundColor(isFavorite ? .red : settings.currentTheme.textColorPrimary)
+                if project.ownerID != UserManager.shared.user.id {
+                    Button(action: {
+                        toggleFavoriteStatus()
+                    }) {
+                        Image(systemName: isFavorite ? "heart.fill" : "heart")
+                            .resizable()
+                            .frame(width: 20, height: 20)
+                            .foregroundColor(isFavorite ? .red : settings.currentTheme.textColorPrimary)
+                    }
+                } else {
+                    Button(action: {
+                        deleteOrder()
+                    }) {
+                        Image(systemName: "x.circle.fill")
+                            .resizable()
+                            .frame(width: 20, height: 20)
+                            .foregroundColor(.red)
+                    }
                 }
             }
         }
@@ -169,9 +186,20 @@ struct DetailProjectView: View {
         } else {
             NetworkService.addOrderToFavorites(orderId: project.id) { success, error in
                 if success {
-                    UserManager.shared.user.liked.append(project)
-                    isFavorite = true
+                    DispatchQueue.main.async {
+                        UserManager.shared.user.liked.append(project)
+                        isFavorite = true
+                    }
                 }
+            }
+        }
+    }
+    
+    private func deleteOrder() {
+        NetworkService.deleteOrder(orderId: project.id) { success, error in
+            DispatchQueue.main.async {
+                ToastManager.shared.show(message: "Проект успешно удален")
+                dismiss()
             }
         }
     }

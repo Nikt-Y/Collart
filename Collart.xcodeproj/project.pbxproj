@@ -383,9 +383,6 @@
 				72AF5FF32B3DEF30000610B7 /* Utilities */,
 				72AF5FF22B3DEEF4000610B7 /* Services */,
 				72AF5FEF2B377BEE000610B7 /* Screens */,
-				72AF5FF02B3DEEC0000610B7 /* Views */,
-				72AF5FF12B3DEED1000610B7 /* ViewModels */,
-				72AF5FEC2B377B86000610B7 /* Models */,
 				72AF5FC22B377249000610B7 /* Assets.xcassets */,
 				72AF5FC42B377249000610B7 /* Preview Content */,
 			);
@@ -417,13 +414,6 @@
 			path = CollartUITests;
 			sourceTree = "<group>";
 		};
-		72AF5FEC2B377B86000610B7 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
 		72AF5FEF2B377BEE000610B7 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
@@ -435,20 +425,6 @@
 				72AF600D2B40A232000610B7 /* Onboarding */,
 			);
 			path = Screens;
-			sourceTree = "<group>";
-		};
-		72AF5FF02B3DEEC0000610B7 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		72AF5FF12B3DEED1000610B7 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = ViewModels;
 			sourceTree = "<group>";
 		};
 		72AF5FF22B3DEEF4000610B7 /* Services */ = {

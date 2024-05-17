@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct FilterOption: Identifiable, Hashable {
     var id: String { text }
@@ -16,6 +17,8 @@ struct FilterOption: Identifiable, Hashable {
 class HomeViewModel: ObservableObject {
     @Published var projects: [Order] = []
     @Published var specialists: [Specialist] = []
+    var projectList: [Order] = []
+    var specialistList: [Specialist] = []
     
     // Отправление приглашений на проект
     @Published var showInviteSelect: Bool = false
@@ -28,9 +31,12 @@ class HomeViewModel: ObservableObject {
     @Published var toolFilters: [FilterOption] = []
     
     // Поиск
+    @Published var searchText = ""
     @Published var specialtySearchText = ""
     @Published var experienceSearchText = ""
     @Published var toolSearchText = ""
+    
+    @Published var isLoading = true
     
     init() {
         loadFilters()
@@ -51,8 +57,6 @@ class HomeViewModel: ObservableObject {
     }
     
     func loadFilters() {
-        // TODO: Сделать запоминание последних использованных фильтров в юзердефолтс
-        
         toolFilters = [
             .init(text: "Postman", isSelected: false),
             .init(text: "Adobe Photoshop", isSelected: false),
@@ -84,9 +88,6 @@ class HomeViewModel: ObservableObject {
         experienceFilters = [.init(text: "Нет опыта", isSelected: false), .init(text: "От 1 года до 3 лет", isSelected: false) , .init(text: "От 3 до 5 лет"), .init(text: "Более 5 лет")]
     }
     
-    func searchText() {
-        // TODO: Сделать поиск по тексту
-    }
     
     func fetchProjects(completion: @escaping () -> ()) {
         NetworkService.fetchListOfOrders { result in
@@ -94,22 +95,9 @@ class HomeViewModel: ObservableObject {
             case .success(let orders):
                 // Обработайте успешное получение списка заказов, например, обновите интерфейс
                 print("Orders: \(orders)")
-                self.projects = []
-                for order in orders {
-                    var proj = Order(
-                        id: order.order.id,
-                        projectImage: order.order.image,
-                        projectName: order.order.title,
-                        roleRequired: order.skill.nameRu,
-                        requirement: order.order.taskDescription,
-                        experience: Experience.fromString(order.order.experience).text,
-                        tools: order.tools.joined(separator: ", "),
-                        authorAvatar: order.order.owner.userPhoto ?? "",
-                        authorName: "\(order.order.owner.name!) \(order.order.owner.surname!)",
-                        ownerID: order.order.owner.id,
-                        description: order.order.projectDescription)
-                    self.projects.append(proj)
-                }
+                self.projectList = orders.map({ order in
+                    Order.transformToOrder(from: order)
+                })
                 self.applyFilters()
                 
             case .failure(let error):
@@ -125,36 +113,10 @@ class HomeViewModel: ObservableObject {
         NetworkService.fetchListOfUsers { result in
             switch result {
             case .success(let users):
-                self.specialists = []
+                self.specialistList = users.map({ user in
+                    Specialist.transformToSpecialist(from: user)
+                })
                 print("users: \(users)")
-                for user in users {
-                    var spec = Specialist(
-                        id: user.user.id,
-                        backgroundImage: user.user.cover ?? "",
-                        specImage: user.user.userPhoto ?? "",
-                        name: "\(user.user.name!) \(user.user.surname!)".trimmingCharacters(in: [" "]),
-                        profession: user.skills.compactMap(
-                            {
-                                if $0.primary ?? false {
-                                    return language == "ru" ? $0.nameRu : $0.nameEn
-                                } else {
-                                    return nil
-                                }
-                            }).joined(separator: ", "),
-                        experience: Experience.fromString(user.user.experience ?? "").text,
-                        tools: user.tools.joined(separator: ", "),
-                        email: user.user.email ?? "",
-                        subProfession: user.skills.compactMap(
-                            {
-                                if !($0.primary ?? false) {
-                                    return language == "ru" ? $0.nameRu : $0.nameEn
-                                } else {
-                                    return nil
-                                }
-                            }).joined(separator: ", ")
-                    )
-                    self.specialists.append(spec)
-                }
                 self.applyFilters()
 
             case .failure(let error):
@@ -217,6 +179,18 @@ class HomeViewModel: ObservableObject {
         toolFilters.contains(where: { $0.isSelected })
     }
     
+    var filteredOrders: [Order] {
+        projects.filter { order in
+            return searchText.isEmpty || order.projectName.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+    
+    var filteredSpecs: [Specialist] {
+        specialists.filter { spec in
+            return searchText.isEmpty || spec.name.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+    
     func resetFilters() {
         specialtyFilters = specialtyFilters.map { FilterOption(text: $0.text, isSelected: false) }
         experienceFilters = experienceFilters.map { FilterOption(text: $0.text, isSelected: false) }
@@ -229,8 +203,7 @@ class HomeViewModel: ObservableObject {
         let selectedExperiences = experienceFilters.filter { $0.isSelected }.map { $0.text }
         let selectedTools = toolFilters.filter { $0.isSelected }.map { $0.text }
         
-        // Фильтрация проектов
-        projects = projects.filter { project in
+        let filteredProjects = projectList.filter { project in
             // Проверяем, соответствует ли проект выбранным специализациям, опыту и инструментам
             let matchesSpecialty = selectedSpecialties.isEmpty || selectedSpecialties.contains(where: project.roleRequired.contains)
             let matchesExperience = selectedExperiences.isEmpty || selectedExperiences.contains(where: project.experience.contains)
@@ -239,14 +212,21 @@ class HomeViewModel: ObservableObject {
             return matchesSpecialty && matchesExperience && matchesTools
         }
         
-        // Фильтрация специалистов
-        specialists = specialists.filter { specialist in
+        let filteredSpecs = specialistList.filter { specialist in
             let matchesProfession = selectedSpecialties.isEmpty || selectedSpecialties.contains(where: specialist.profession.contains)
             let matchesExperience = selectedExperiences.isEmpty || selectedExperiences.contains(where: specialist.experience.contains)
             let matchesTools = selectedTools.isEmpty || selectedTools.contains(where: specialist.tools.contains)
             
             return matchesProfession && matchesExperience && matchesTools
         }
+        projects = []
+        specialists = []
+        isLoading = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.projects = filteredProjects
+            self.specialists = filteredSpecs
+            self.isLoading = false
+        }
     }
-    
 }

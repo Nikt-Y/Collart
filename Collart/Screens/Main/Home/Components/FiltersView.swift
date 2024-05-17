@@ -130,7 +130,6 @@ struct FiltersView: View {
                 isActive = false
             }
             .buttonStyle(PrimaryButtonStyle())
-            .disabled(!viewModel.isFiltersSelected)
             .animation(.easeInOut, value: viewModel.isFiltersSelected)
             .padding()
         }

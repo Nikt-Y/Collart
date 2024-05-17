@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import CommonCrypto
 
 private struct UserManagerKey: EnvironmentKey {
     static var defaultValue: UserManager = UserManager()
@@ -85,5 +86,15 @@ class UserManager: ObservableObject {
             activeProjects: [], // Нужна дополнительная логика для заполнения
             liked: [] // Нужна дополнительная логика для заполнения
         )
+    }
+    
+    static func hashPassword(_ password: String) -> String? {
+        let salt = "9nNnI5dZm3c="
+        guard let data = (password + salt).data(using: .utf8) else { return nil }
+        var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+        data.withUnsafeBytes {
+            _ = CC_SHA256($0.baseAddress, CC_LONG(data.count), &hash)
+        }
+        return Data(hash).base64EncodedString()
     }
 }

@@ -1,10 +1,3 @@
-//
-//  DetailSpecialitstView.swift
-//  Collart
-//
-//  Created by Nik Y on 20.03.2024.
-//
-
 import SwiftUI
 import CachedAsyncImage
 
@@ -16,13 +9,12 @@ enum DetailSpecTab: Pickable, CaseIterable {
         case .portfolio: return "Портфолио"
         case .collaborations: return "Коллаборации"
         case .active: return "Активные"
-            //        case .liked: return "Избранные"
         }
     }
 }
 
-struct DetailSpecialitstView: View {
-    @StateObject var viewModel: DetailSpecialitstViewModel
+struct DetailSpecialistView: View {
+    @StateObject var viewModel: DetailSpecialistViewModel
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.dismiss) var dismiss
     
@@ -107,6 +99,7 @@ struct DetailSpecialitstView: View {
                     Text(viewModel.specProfile.subProfessions.joined(separator: ", "))
                         .font(.system(size: settings.textSizeSettings.title))
                         .foregroundColor(settings.currentTheme.textDescriptionColor)
+                        .multilineTextAlignment(.center)
                 }
                 
                 Text(viewModel.specProfile.email)
@@ -115,8 +108,15 @@ struct DetailSpecialitstView: View {
                 
                 if !isProfile {
                     HStack {
-                        Button("Написать") {
-                            // action
+                        NavigationLink {
+                            let name = "\(viewModel.specProfile.name) \(viewModel.specProfile.surname)".trimmingCharacters(in: [" "])
+                            ChatView(
+                                specId: viewModel.specProfile.id,
+                                specImage: viewModel.specProfile.avatar,
+                                specName: name
+                            )
+                        } label: {
+                            Text("Написать")
                         }
                         .buttonStyle(SecondaryButtonStyle())
                         .padding()
@@ -127,7 +127,6 @@ struct DetailSpecialitstView: View {
                         .buttonStyle(PrimaryButtonStyle())
                         .padding()
                     }
-                    
                 }
                 
                 CustomPicker(selectedTab: $selectedTab)
@@ -144,11 +143,8 @@ struct DetailSpecialitstView: View {
                                     Spacer()
                                 }
                                 .padding(.top, 70)
-
                             }
                         } else {
-                            
-                            
                             LazyVGrid(columns: columns) {
                                 ForEach(viewModel.specProfile.portfolioProjects, id: \.id) { item in
                                     PortfolioCell(imageName: item.projectImage, title: item.projectName)
@@ -157,19 +153,9 @@ struct DetailSpecialitstView: View {
                             }
                             .padding(.top, 5)
                             .padding(.horizontal, 10)
-                            
-                            .onAppear {
-                                isLoading = true
-                                NetworkService.fetchPortfolio(userId: viewModel.specProfile.id) { result in
-                                    switch result {
-                                    case .success(let portfolioProjects):
-                                        viewModel.specProfile.portfolioProjects = portfolioProjects.map({ proj in
-                                            PortfolioProject(projectImage: proj.image, projectName: proj.name, files: proj.files)
-                                        })
-                                    case .failure(let error):
-                                        print("Error fetching portfolio: \(error.localizedDescription)")
-                                    }
-                                    isLoading = false
+                            .overlay {
+                                if viewModel.specProfile.portfolioProjects.isEmpty {
+                                    Text("Нет проектов в портфолио")
                                 }
                             }
                         }
@@ -185,10 +171,7 @@ struct DetailSpecialitstView: View {
                                 }
                                 .padding(.top, 70)
                             }
-                            
                         } else {
-                            
-                            
                             LazyVStack(spacing: 20) {
                                 ForEach(viewModel.specProfile.oldProjects, id: \.id) { item in
                                     OldOrderCell(oldOrder: item)
@@ -196,48 +179,9 @@ struct DetailSpecialitstView: View {
                             }
                             .padding(.top, 5)
                             .padding(.horizontal)
-                            
-                            .onAppear {
-                                isLoading = true
-                                NetworkService.fetchCompletedCollaborations(userId: viewModel.specProfile.id) { result in
-                                    switch result {
-                                    case .success(let projects):
-                                        NetworkService.Interactions.fetchUserInteractions(userId: viewModel.specProfile.id) { result in
-                                            switch result {
-                                            case .success(let interactions):
-                                                viewModel.specProfile.oldProjects = []
-                                                for proj in projects {
-                                                    var contributors: [Specialist] = []
-                                                    for interaction in interactions {
-                                                        if interaction.order.order.id == proj.order.id {
-                                                            if !contributors.contains(where: { spec in
-                                                                spec.id == interaction.getter.user.id
-                                                            }) {
-                                                                // Добавить геттера в контрибуторы
-                                                                contributors.append(Specialist.transformToSpecialist(from: interaction.getter))
-                                                            }
-                                                            
-                                                            if !contributors.contains(where: { spec in
-                                                                spec.id == interaction.sender.user.id
-                                                            }) {
-                                                                // Добавить sender в контрибуторы
-                                                                contributors.append(Specialist.transformToSpecialist(from: interaction.sender))
-                                                            }
-                                                        }
-                                                    }
-                                                    viewModel.specProfile.oldProjects.append( OldProject(contributors: contributors, project: Order.transformToOrder(from: proj)))
-                                                }
-                                                
-                                            case .failure(let failure):
-                                                break
-                                            }
-                                            isLoading = false
-                                        }
-                                        
-                                    case .failure(let error):
-                                        print("Error fetching portfolio: \(error.localizedDescription)")
-                                        isLoading = false
-                                    }
+                            .overlay {
+                                if viewModel.specProfile.oldProjects.isEmpty {
+                                    Text("Нет активных коллабораций")
                                 }
                             }
                         }
@@ -254,37 +198,26 @@ struct DetailSpecialitstView: View {
                                 .padding(.top, 70)
                             }
                         } else {
-                            
                             LazyVStack(spacing: 20) {
                                 ForEach(viewModel.specProfile.activeProjects, id: \.id) { item in
                                     ProjectCell(project: item)
-                                    
                                 }
                             }
                             .padding(.top, 5)
                             .padding(.horizontal, 20)
-                            
-                            .onAppear {
-                                isLoading = true
-                                NetworkService.fetchUserOrders(userId: viewModel.specProfile.id) { result in
-                                    switch result {
-                                    case .success(let projects):
-                                        viewModel.specProfile.activeProjects = projects.map({ proj in
-                                            Order.transformToOrder(from: proj)
-                                        })
-                                    case .failure(let error):
-                                        print("Error fetching portfolio: \(error.localizedDescription)")
-                                    }
-                                    isLoading = false
+                            .overlay {
+                                if viewModel.specProfile.activeProjects.isEmpty {
+                                    Text("Нет активных проектов")
                                 }
                             }
                         }
                     }
                 }
                 .animation(.easeInOut, value: selectedTab)
-                
+                .onChange(of: selectedTab) { newTab in
+                    loadData(for: newTab)
+                }
             }
-            
         }
         .background(settings.currentTheme.backgroundColor)
         .sheet(isPresented: $viewModel.showInviteSelect, content: {
@@ -379,13 +312,6 @@ struct DetailSpecialitstView: View {
                 .buttonStyle(ConditionalButtonStyle(conditional: !viewModel.selectedProjectsForInvite.isEmpty))
                 .disabled(viewModel.selectedProjectsForInvite.isEmpty)
                 .padding(.horizontal)
-                //                    Button("Пригласить") {
-                //                        viewModel.showInviteSelect.toggle()
-                //                        viewModel.selectedProjectsForInvite = []
-                //                    }
-                //                    .buttonStyle(ConditionalButtonStyle(conditional: !viewModel.selectedProjectsForInvite.isEmpty))
-                //                    .disabled(viewModel.selectedProjectsForInvite.isEmpty)
-                //                    .padding(.horizontal)
             }
             .presentationDetents([.medium])
         })
@@ -403,12 +329,68 @@ struct DetailSpecialitstView: View {
                     .padding(10)
             }
         }
+        .onAppear {
+            loadData(for: selectedTab)
+        }
+    }
+    
+    private func loadData(for tab: DetailSpecTab) {
+        isLoading = true
+        switch tab {
+        case .portfolio:
+            NetworkService.fetchPortfolio(userId: viewModel.specProfile.id) { result in
+                switch result {
+                case .success(let portfolioProjects):
+                    viewModel.specProfile.portfolioProjects = portfolioProjects.map { proj in
+                        PortfolioProject(projectImage: proj.image, projectName: proj.name, files: proj.files)
+                    }
+                case .failure(let error):
+                    print("Error fetching portfolio: \(error.localizedDescription)")
+                }
+                isLoading = false
+            }
+        case .collaborations:
+            NetworkService.fetchCompletedCollaborations(userId: viewModel.specProfile.id) { result in
+                switch result {
+                case .success(let projects):
+                    NetworkService.Interactions.fetchUserInteractions(userId: viewModel.specProfile.id) { result in
+                        switch result {
+                        case .success(let interactions):
+                            viewModel.specProfile.oldProjects = []
+                            for proj in projects {
+                                var contributors: [Specialist] = []
+                                for interaction in interactions {
+                                    if interaction.order.order.id == proj.order.id {
+                                        if !contributors.contains(where: { $0.id == interaction.getter.user.id }) {
+                                            contributors.append(Specialist.transformToSpecialist(from: interaction.getter))
+                                        }
+                                        if !contributors.contains(where: { $0.id == interaction.sender.user.id }) {
+                                            contributors.append(Specialist.transformToSpecialist(from: interaction.sender))
+                                        }
+                                    }
+                                }
+                                viewModel.specProfile.oldProjects.append(OldProject(contributors: contributors, project: Order.transformToOrder(from: proj)))
+                            }
+                        case .failure(let failure):
+                            break
+                        }
+                        isLoading = false
+                    }
+                case .failure(let error):
+                    print("Error fetching portfolio: \(error.localizedDescription)")
+                    isLoading = false
+                }
+            }
+        case .active:
+            NetworkService.fetchUserOrders(userId: viewModel.specProfile.id) { result in
+                switch result {
+                case .success(let projects):
+                    viewModel.specProfile.activeProjects = projects.map { Order.transformToOrder(from: $0) }
+                case .failure(let error):
+                    print("Error fetching portfolio: \(error.localizedDescription)")
+                }
+                isLoading = false
+            }
+        }
     }
 }
-
-//struct DetailSpecialitstView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        DetailSpecialitstView(viewModel: DetailSpecialitstViewModel(specProfile: User(id: "df")))
-//            .environmentObject(SettingsManager())
-//    }
-//}

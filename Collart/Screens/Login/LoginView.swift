@@ -26,7 +26,7 @@ struct LoginView: View {
                 .ignoresSafeArea()
             
             VStack {
-                TextErrorField(placeHolder: "Почта", fieldText: $viewModel.login, isValid: $viewModel.isValidLogin)
+                TextErrorField(placeHolder: "Почта", fieldText: $viewModel.login, isValid: $viewModel.isValidLogin, autocapitalization: false)
                     .padding(.bottom, 3)
                 
                 PasswordField(placeHolder: "Пароль", fieldText: $viewModel.password, isValid: $viewModel.isValidPassword)
@@ -44,6 +44,7 @@ struct LoginView: View {
                 }
                 
                 Button("Войти") {
+                    hideKeyboard()
                     viewModel.attemptLogin()
                     debugPrint("qwe")
                 }
@@ -77,6 +78,10 @@ struct LoginView: View {
                 .animation(.default, value: viewModel.isLoading)
             }
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .onTapGesture {
+            hideKeyboard()
+        }
         .navigationBarBackButtonHidden()
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -95,8 +100,6 @@ struct LoginView: View {
                 }
             }
         }
-        
-
     }
 }
 

@@ -80,8 +80,15 @@ struct SpecialistCell: View {
                 
                 Text(specialist.profession)
                     .font(.system(size: settingsManager.textSizeSettings.title))
-                    .foregroundColor(settingsManager.currentTheme.textDescriptionColor)
-                    .padding(.bottom, 11)
+                    .foregroundColor(settingsManager.currentTheme.textColorPrimary)
+                    
+                if !specialist.subProfession.isEmpty {
+                    Text(specialist.subProfession)
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: settingsManager.textSizeSettings.title))
+                        .foregroundColor(settingsManager.currentTheme.textDescriptionColor)
+                        .padding(.horizontal)
+                }
                 
                 HStack {
                     VStack(alignment: .leading) {
@@ -99,6 +106,7 @@ struct SpecialistCell: View {
                     
                     Spacer()
                 }
+                .padding(.top, 3)
                 .padding(.horizontal)
 
                 

@@ -26,7 +26,7 @@ var isBackFromChat = false
 class ChatsListViewModel: ObservableObject {
     @Published var chats: [Chat] = []
 
-    func fetchChats() {
+    func fetchChats(completion: @escaping (Bool) -> ()) {
         let userId = UserManager.shared.user.id
         NetworkService.Chat.fetchChats(userId: userId) { [weak self] result in
             switch result {
@@ -47,9 +47,13 @@ class ChatsListViewModel: ObservableObject {
                              status: chat.isRead ? .readed : .unreaded,
                              timeLast: ISO8601DateFormatter().date(from: chat.messageTime) ?? Date())
                     }
+                    completion(true)
                 }
             case .failure(let error):
                 print("Failed to fetch chats: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    completion(false)
+                }
             }
         }
     }

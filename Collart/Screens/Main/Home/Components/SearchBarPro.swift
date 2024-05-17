@@ -1,10 +1,3 @@
-//
-//  SearchBarPro.swift
-//  Collart
-//
-//  Created by Nik Y on 03.02.2024.
-//
-
 import SwiftUI
 
 struct SearchBarPro: View {
@@ -14,6 +7,7 @@ struct SearchBarPro: View {
     @Binding var showFilters: Bool
     
     @State private var isEditing = false
+    @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
         HStack {
@@ -25,39 +19,57 @@ struct SearchBarPro: View {
                         .foregroundColor(settingsManager.currentTheme.textColorLightPrimary)
                         .padding(.leading, 10)
                 }
-            
-                TextField("", text: $text, prompt:
-                            Text("Поиск")
-                    .foregroundColor(settingsManager.currentTheme.textColorLightPrimary)
-                )
-                .padding(.vertical, 12)
-                .padding(.trailing, 40)
-                .onTapGesture {
-                    withAnimation {
-                        self.isEditing = true
+                .zIndex(1) // Ensure the button is above the touch area
+                
+                TextField("", text: $text, prompt: Text("Поиск").foregroundColor(settingsManager.currentTheme.textColorLightPrimary))
+                    .focused($isTextFieldFocused)
+                    .padding(.vertical, 12)
+                    .padding(.trailing, 40)
+                    .onChange(of: isTextFieldFocused) { newValue in
+                        if newValue {
+                            withAnimation {
+                                self.isEditing = true
+                            }
+                        } else {
+                            withAnimation {
+                                if self.text.isEmpty {
+                                    self.isEditing = false
+                                }
+                            }
+                        }
                     }
-                }
-                .overlay {
-                    HStack {
-                        Spacer()
-                        if isEditing {
-                            Button(action: {
-                                self.text = ""
-                            }) {
-                                Image(systemName: "multiply.circle.fill")
+                    .overlay {
+                        HStack {
+                            Spacer()
+                            if isEditing {
+                                Button(action: {
+                                    self.text = ""
+                                }) {
+                                    Image(systemName: "multiply.circle.fill")
+                                        .foregroundColor(settingsManager.currentTheme.textColorLightPrimary)
+                                        .padding(.trailing, 14)
+                                }
+                            } else {
+                                Image(systemName: "magnifyingglass")
                                     .foregroundColor(settingsManager.currentTheme.textColorLightPrimary)
                                     .padding(.trailing, 14)
                             }
-                        } else {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(settingsManager.currentTheme.textColorLightPrimary)
-                                .padding(.trailing, 14)
                         }
                     }
-                }
+                    .background(settingsManager.currentTheme.searchColor)
+                    .clipShape(Rectangle())
             }
             .background(settingsManager.currentTheme.searchColor)
             .clipShape(Capsule())
+            .contentShape(Rectangle()) // Extend tap area to the entire HStack
+            .onTapGesture {
+                if !isEditing {
+                    withAnimation {
+                        self.isEditing = true
+                        self.isTextFieldFocused = true
+                    }
+                }
+            }
             
             if isEditing {
                 Button(action: {
@@ -73,13 +85,5 @@ struct SearchBarPro: View {
                 .transition(.move(edge: .trailing))
             }
         }
-    }
-}
-
-struct SearchBarPro_Previews: PreviewProvider {
-    static var previews: some View {
-        SearchBarPro(text: .constant(""), showFilters: .constant(true))
-            .environmentObject(SettingsManager())
-            .preferredColorScheme(.dark)
     }
 }

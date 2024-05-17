@@ -2,10 +2,9 @@ import SwiftUI
 
 struct EditProfileView: View {
     @StateObject private var viewModel: EditProfileViewModel
-    @State private var presentProfessionSheet: Bool = false
-    @State private var presentSubProfessionSheet: Bool = false
+    @State private var presentSkillsSheet: Bool = false
     @State private var presentExperienceSheet: Bool = false
-    @State private var selectedSubProfessionIndex: Int?
+    @State private var selectedSkillIndex: Int?
     
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var settingsManager: SettingsManager
@@ -48,59 +47,38 @@ struct EditProfileView: View {
                             fieldText: $viewModel.email,
                             isValid: $viewModel.isValidEmail,
                             validateMethod: Validator.validateEmail,
-                            errorText: "Неверный формат почты"
+                            errorText: "Неверный формат почты",
+                            autocapitalization: false
                         )
                         .padding(.bottom, 3)
                         
-                        Button {
-                            presentProfessionSheet = true
-                        } label: {
-                            HStack {
-                                if viewModel.profession.isEmpty {
-                                    Text("Основная специальность")
-                                } else {
-                                    Text("\(viewModel.profession)")
-                                }
-                                
-                                Spacer()
-                                
-                                Image(systemName: "arrow.right")
-                            }
-                            .padding()
-                            .background(RoundedRectangle(cornerRadius: 100).strokeBorder(settingsManager.currentTheme.selectedTextColor(isSelected: !viewModel.profession.isEmpty), lineWidth: 1))
-                            .foregroundColor(settingsManager.currentTheme.selectedTextColor(isSelected: !viewModel.profession.isEmpty))
-                            .font(.system(size: settingsManager.textSizeSettings.body))
-                        }
-                        .padding(.bottom, 3)
-                        
-                        ForEach(viewModel.subProfessions.indices, id: \.self) { index in
+                        ForEach(Array(viewModel.skills.enumerated()), id: \.element) { index, skill in
                             Button {
-                                selectedSubProfessionIndex = index
-                                presentSubProfessionSheet = true
+                                selectedSkillIndex = index
+                                presentSkillsSheet = true
                             } label: {
                                 HStack {
-                                    if viewModel.subProfessions[index].isEmpty {
-                                        Text("Дополнительная специальность \(index + 1)")
-                                    } else {
-                                        Text("\(viewModel.subProfessions[index])")
-                                    }
+                                    Text(skill.isEmpty ? "Выберите специальность" : skill)
                                     
                                     Spacer()
                                     
                                     Image(systemName: "arrow.right")
                                 }
                                 .padding()
-                                .background(RoundedRectangle(cornerRadius: 100).strokeBorder(settingsManager.currentTheme.selectedTextColor(isSelected: !viewModel.subProfessions[index].isEmpty), lineWidth: 1))
-                                .foregroundColor(settingsManager.currentTheme.selectedTextColor(isSelected: !viewModel.subProfessions[index].isEmpty))
+                                .background(RoundedRectangle(cornerRadius: 100).strokeBorder(settingsManager.currentTheme.selectedTextColor(isSelected: !skill.isEmpty), lineWidth: 1))
+                                .foregroundColor(settingsManager.currentTheme.selectedTextColor(isSelected: !skill.isEmpty))
                                 .font(.system(size: settingsManager.textSizeSettings.body))
                             }
                             .padding(.bottom, 3)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
                         
-                        if viewModel.subProfessions.count < 2 {
-                            HStack {
+                        HStack {
+                            if viewModel.skills.count < 3 {
                                 Button {
-                                    viewModel.subProfessions.append("")
+                                    withAnimation {
+                                        viewModel.addSkill()
+                                    }
                                 } label: {
                                     Text("Добавить специальность")
                                         .foregroundColor(settingsManager.currentTheme.textColorOnPrimary)
@@ -109,11 +87,26 @@ struct EditProfileView: View {
                                         .background(settingsManager.currentTheme.primaryColor)
                                         .clipShape(Capsule())
                                 }
-                                Spacer()
                             }
-                            .padding(.horizontal, 2)
-                            .padding(.bottom, 3)
+                            Spacer()
+                            
+                            if viewModel.skills.count > 1 {
+                                Button {
+                                    withAnimation {
+                                        viewModel.removeSkill()
+                                    }
+                                } label: {
+                                    Text(viewModel.skills.count < 3 ? "Убрать" : "Убрать специальность")
+                                        .foregroundColor(settingsManager.currentTheme.textColorOnPrimary)
+                                        .padding(.vertical, 4)
+                                        .padding(.horizontal, 8)
+                                        .background(Color.red)
+                                        .clipShape(Capsule())
+                                }
+                                .transition(.scale.combined(with: .opacity))
+                            }
                         }
+                        .padding(.horizontal, 2)
                         
                         Toggle("Хотите быть видимым в списке специалистов?", isOn: $viewModel.searchable)
                             .padding(.bottom, 3)
@@ -230,6 +223,9 @@ struct EditProfileView: View {
                 .animation(.default, value: viewModel.isLoading)
             }
         }
+        .onTapGesture {
+            hideKeyboard()
+        }
         .navigationBarBackButtonHidden()
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -248,28 +244,61 @@ struct EditProfileView: View {
                 }
             }
         }
-        .sheet(isPresented: $presentProfessionSheet) {
-            SkillSelectionView(skills: $viewModel.skills) { selectedSkill in
-                viewModel.profession = selectedSkill
-                presentProfessionSheet = false
-            }
-        }
-        .sheet(isPresented: $presentSubProfessionSheet) {
-            if let index = selectedSubProfessionIndex {
-                SkillSelectionView(skills: $viewModel.skills) { selectedSkill in
-                    viewModel.subProfessions[index] = selectedSkill
-                    presentSubProfessionSheet = false
+        .sheet(isPresented: $presentSkillsSheet) {
+            NavigationStack {
+                VStack {
+                    SearchBarLight(text: $viewModel.searchText)
+                        .padding(.top)
+                        .padding(.horizontal, 10)
+                    
+                    List(viewModel.skillList) { activity in
+                        HStack {
+                            Text(activity.text)
+                                .foregroundColor(settingsManager.currentTheme.textColorPrimary)
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                        .listRowBackground(settingsManager.currentTheme.backgroundColor)
+                        .onTapGesture {
+                            if let index = selectedSkillIndex {
+                                viewModel.skills[index] = activity.text
+                            } else {
+                                viewModel.skills.append(activity.text)
+                            }
+                            presentSkillsSheet = false
+                        }
+                    }
+                    .listStyle(.plain)
+                    .overlay(Group {
+                        if viewModel.skillList.isEmpty {
+                            Text("Ничего не найдено...")
+                                .foregroundColor(settingsManager.currentTheme.textColorPrimary)
+                        }
+                    })
+                }
+                .background(settingsManager.currentTheme.backgroundColor)
+                .animation(.default, value: viewModel.skillList.isEmpty)
+                .animation(.default, value: viewModel.searchText)
+                .onAppear {
+                    viewModel.searchText = ""
                 }
             }
+            .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $presentExperienceSheet) {
-            ExperienceSelectionView(experiences: ExperienceFilter.experiences.map { $0.experience }) { selectedExperience in
-                viewModel.experience = selectedExperience
-                presentExperienceSheet = false
+            NavigationStack {
+                ExperienceSelectionView(experiences: ExperienceFilter.experiences.map { $0.experience }, selectedExperience: viewModel.experience) { selectedExperience in
+                    viewModel.experience = selectedExperience
+                    presentExperienceSheet = false
+                }
             }
+            .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $viewModel.showToolSheet) {
-            ToolSelectionView(tools: $viewModel.tools)
+            NavigationStack {
+                ToolSelectionView(tools: $viewModel.tools)
+            }
+            .presentationDetents([.medium, .large])
         }
     }
 }
@@ -306,6 +335,7 @@ struct SkillSelectionView: View {
 
 struct ExperienceSelectionView: View {
     let experiences: [Experience]
+    var selectedExperience: Experience
     var onSelect: ((Experience) -> Void)? = nil
     
     var body: some View {
@@ -318,7 +348,7 @@ struct ExperienceSelectionView: View {
                 HStack {
                     Text(experience.text)
                     Spacer()
-                    if experience == experiences.first(where: { $0.text == experience.text }) {
+                    if experience == selectedExperience {
                         Image(systemName: "checkmark")
                     }
                 }
@@ -327,34 +357,61 @@ struct ExperienceSelectionView: View {
                     onSelect?(experience)
                 }
             }
+
         }
     }
 }
 
 struct ToolSelectionView: View {
-    @Binding var tools: [Tool]
+    @EnvironmentObject var settingsManager: SettingsManager
+    @Binding var tools: [String]
+    @State private var searchText: String = ""
+    
+    var filteredTools: [Tool] {
+        if searchText.isEmpty {
+            return Tool.tools
+        } else {
+            return Tool.tools.filter { $0.text.lowercased().contains(searchText.lowercased()) }
+        }
+    }
     
     var body: some View {
         VStack {
-            Text("Выберите инструменты")
+            Text("Выберите инструмент")
                 .font(.headline)
                 .padding()
             
-            List {
-                ForEach($tools) { $tool in
-                    HStack {
-                        Text(tool.text)
-                        Spacer()
-                        if tool.isSelected {
-                            Image(systemName: "checkmark")
-                        }
+            SearchBarLight(text: $searchText)
+                .padding(.horizontal, 10)
+            
+            List(filteredTools, id: \.id) { tool in
+                HStack {
+                    Text(tool.text)
+                    Spacer()
+                    if tools.contains(where: { $0 == tool.text }) {
+                        Image(systemName: "checkmark")
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        tool.isSelected.toggle()
+                }
+                .contentShape(Rectangle())
+                .listRowBackground(settingsManager.currentTheme.backgroundColor)
+                .onTapGesture {
+                    if let index = tools.firstIndex(where: { $0 == tool.text }) {
+                        tools.remove(at: index)
+                    } else {
+                        tools.append(tool.text)
                     }
                 }
             }
+            .listStyle(.plain)
+            .overlay(Group {
+                if filteredTools.isEmpty {
+                    Text("Ничего не найдено...")
+                        .foregroundColor(settingsManager.currentTheme.textColorPrimary)
+                }
+            })
         }
+        .background(settingsManager.currentTheme.backgroundColor)
+        .animation(.default, value: filteredTools.isEmpty)
+        .animation(.default, value: searchText)
     }
 }

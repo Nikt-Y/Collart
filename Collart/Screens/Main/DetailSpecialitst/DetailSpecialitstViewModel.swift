@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class DetailSpecialitstViewModel: ObservableObject {
+final class DetailSpecialistViewModel: ObservableObject {
     @Published var specProfile: User
     @Published var showInviteSelect = false
     @Published var selectedProjectsForInvite: [Order] = []
