@@ -66,4 +66,4 @@ MIT License
 
 ---
 
-Crafted with :heart: by [Nikt-Y](https://github.com/Nikt-Y)
+Created with :heart: by [Nikt-Y](https://github.com/Nikt-Y)
